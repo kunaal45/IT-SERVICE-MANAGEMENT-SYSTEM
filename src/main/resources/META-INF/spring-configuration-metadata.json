@@ -1,0 +1,17 @@
+{
+    "properties": [
+        {
+            "name": "app.jwt.secret",
+            "type": "java.lang.String",
+            "description": "Secret key used for signing JWT tokens. Should be a long random string (at least 256 bits).",
+            "sourceType": "com.itsm.itsmsystem.security.JwtUtil"
+        },
+        {
+            "name": "app.jwt.expiration",
+            "type": "java.lang.Long",
+            "description": "JWT token expiration time in milliseconds. Default is 86400000 (24 hours).",
+            "sourceType": "com.itsm.itsmsystem.security.JwtUtil",
+            "defaultValue": 86400000
+        }
+    ]
+}

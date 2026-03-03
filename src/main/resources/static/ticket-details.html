@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ticket Details - ITSM</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "background-light": "#f6f7f8",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                },
+            },
+        }
+    </script>
+    <style>
+        body {
+            font-family: Inter, sans-serif;
+        }
+    </style>
+</head>
+
+<body class="bg-background-light min-h-screen font-display">
+
+    <!-- Header -->
+    <header class="bg-white border-b border-slate-200">
+        <div class="max-w-7xl mx-auto px-8 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-4">
+                    <button onclick="history.back()" class="p-2 hover:bg-slate-100 rounded-lg">
+                        <span class="material-icons">arrow_back</span>
+                    </button>
+                    <div>
+                        <div class="flex items-center gap-3">
+                            <span id="ticketNumber" class="text-sm text-primary font-medium">INC-2024-042</span>
+                            <span class="material-icons text-sm text-slate-400">chevron_right</span>
+                            <span id="ticketStatusBadge"
+                                class="px-2 py-0.5 bg-purple-100 text-purple-700 rounded text-xs font-medium uppercase">IN
+                                PROGRESS</span>
+                        </div>
+                        <h1 id="ticketTitle" class="text-xl font-bold text-slate-800">System Login Failure: LDAP
+                            Authentication Timeout</h1>
+                    </div>
+                </div>
+                <div class="flex items-center gap-3">
+                    <button class="px-4 py-2 border border-slate-200 rounded-lg hover:bg-slate-50 text-sm font-medium">
+                        Edit
+                    </button>
+                    <button id="resolveTicketButton" onclick="handleResolveFromHeader()"
+                        class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-600 text-sm font-medium">
+                        Resolve Ticket
+                    </button>
+                    <button id="closeTicketButton" onclick="handleCloseFromHeader()"
+                        class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-600 text-sm font-medium hidden">
+                        Close Ticket
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-8 py-8">
+
+        <div class="grid grid-cols-3 gap-8">
+
+            <!-- Left Column - Main Content -->
+            <div class="col-span-2 space-y-6">
+
+                <!-- Ticket Info Cards -->
+                <div class="grid grid-cols-4 gap-4">
+                    <div class="bg-white rounded-lg border border-slate-200 p-4">
+                        <div class="text-xs text-slate-500 uppercase tracking-wide mb-1">Priority</div>
+                        <div class="flex items-center gap-2">
+                            <span class="material-icons text-red-600 text-sm">error</span>
+                            <span class="text-sm font-semibold text-red-600">Critical</span>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-lg border border-slate-200 p-4">
+                        <div class="text-xs text-slate-500 uppercase tracking-wide mb-1">Category</div>
+                        <div class="text-sm font-medium text-slate-900">IT Infrastructure</div>
+                    </div>
+                    <div class="bg-white rounded-lg border border-slate-200 p-4">
+                        <div class="text-xs text-slate-500 uppercase tracking-wide mb-1">Requester</div>
+                        <div class="text-sm font-medium text-slate-900">Sarah Jenkins</div>
+                    </div>
+                    <div class="bg-white rounded-lg border border-slate-200 p-4">
+                        <div class="text-xs text-slate-500 uppercase tracking-wide mb-1">Assigned Agent</div>
+                        <div class="flex items-center gap-2">
+                            <div
+                                class="w-6 h-6 bg-primary rounded-full flex items-center justify-center text-white text-xs font-semibold">
+                                JD</div>
+                            <span class="text-sm font-medium text-slate-900">John Doe</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Description -->
+                <div class="bg-white rounded-xl border border-slate-200 p-6">
+                    <div class="flex items-center gap-2 mb-4">
+                        <span class="material-icons text-slate-600">description</span>
+                        <h2 class="text-lg font-semibold text-slate-800">Description</h2>
+                    </div>
+                    <div class="text-slate-700 space-y-3">
+                        <p>Multiple users in the Finance department are reporting that they cannot log in to the ERP
+                            portal. The screen hangs at the "Authenticating..." stage and eventually times out with an
+                            "Error 504: Gateway Timeout".</p>
+
+                        <div class="mt-4">
+                            <div class="font-medium text-slate-800 mb-2">Reproduction Steps:</div>
+                            <ul class="list-disc list-inside space-y-1 text-slate-600">
+                                <li>Navigate to https://erp.college.edu/login</li>
+                                <li>Enter valid credentials</li>
+                                <li>Wait for 60 seconds</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Activity Log -->
+                <div class="bg-white rounded-xl border border-slate-200 p-6">
+                    <div class="flex items-center gap-2 mb-6">
+                        <span class="material-icons text-slate-600">history</span>
+                        <h2 class="text-lg font-semibold text-slate-800">Activity Log</h2>
+                    </div>
+
+                    <div id="activityLogList" class="space-y-6">
+                        <!-- Activity Item -->
+                        <div class="flex gap-4">
+                            <div class="flex flex-col items-center">
+                                <div
+                                    class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                                    <span class="material-icons text-blue-600 text-sm">add_circle</span>
+                                </div>
+                                <div class="w-0.5 h-full bg-slate-200 mt-2"></div>
+                            </div>
+                            <div class="flex-1 pb-6">
+                                <div class="flex items-start justify-between mb-1">
+                                    <div class="font-medium text-slate-900">Ticket Created</div>
+                                    <div class="text-xs text-slate-500">09:00 AM</div>
+                                </div>
+                                <div class="text-sm text-slate-600">System automatically generated ticket from email
+                                    source.</div>
+                            </div>
+                        </div>
+
+                        <!-- Activity Item -->
+                        <div class="flex gap-4">
+                            <div class="flex flex-col items-center">
+                                <div
+                                    class="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center flex-shrink-0">
+                                    <span class="material-icons text-orange-600 text-sm">person_add</span>
+                                </div>
+                                <div class="w-0.5 h-full bg-slate-200 mt-2"></div>
+                            </div>
+                            <div class="flex-1 pb-6">
+                                <div class="flex items-start justify-between mb-1">
+                                    <div class="font-medium text-slate-900">Assigned to Agent</div>
+                                    <div class="text-xs text-slate-500">09:15 AM</div>
+                                </div>
+                                <div class="text-sm text-slate-600">Ticket assigned to <span class="font-medium">John
+                                        Doe</span> (Infrastructure Lead).</div>
+                            </div>
+                        </div>
+
+                        <!-- Activity Item -->
+                        <div class="flex gap-4">
+                            <div class="flex flex-col items-center">
+                                <div
+                                    class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                                    <span class="material-icons text-blue-600 text-sm">sync</span>
+                                </div>
+                                <div class="w-0.5 h-full bg-slate-200 mt-2"></div>
+                            </div>
+                            <div class="flex-1 pb-6">
+                                <div class="flex items-start justify-between mb-1">
+                                    <div class="font-medium text-slate-900">Status Changed</div>
+                                    <div class="text-xs text-slate-500">10:30 AM</div>
+                                </div>
+                                <div class="text-sm text-slate-600">Status moved from <span
+                                        class="font-medium">New</span> to <span class="font-medium text-primary">In
+                                        Progress</span>.</div>
+                            </div>
+                        </div>
+
+                        <!-- Activity Item -->
+                        <div class="flex gap-4">
+                            <div class="flex flex-col items-center">
+                                <div
+                                    class="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center flex-shrink-0">
+                                    <span class="material-icons text-slate-600 text-sm">note</span>
+                                </div>
+                            </div>
+                            <div class="flex-1">
+                                <div class="flex items-start justify-between mb-1">
+                                    <div class="font-medium text-slate-900">Internal Note</div>
+                                    <div class="text-xs text-slate-500">11:40 AM</div>
+                                </div>
+                                <div
+                                    class="bg-slate-50 rounded-lg p-3 text-sm text-slate-700 italic border-l-2 border-slate-300">
+                                    "Investigating LDAP logs now. Seeing several AD1 errors from the auth server." -
+                                    John D.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Add Update Section -->
+                <div class="bg-white rounded-xl border border-slate-200 p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="font-semibold text-slate-800">Add Update</h3>
+                        <label class="flex items-center gap-2 text-sm text-slate-600">
+                            <input type="checkbox" class="rounded border-slate-300">
+                            <span>Internal only</span>
+                        </label>
+                    </div>
+                    <textarea id="updateComment" rows="4" placeholder="Type a comment or update..."
+                        class="w-full px-4 py-3 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary resize-none"></textarea>
+                    <div class="flex items-center justify-between mt-4">
+                        <div class="flex items-center gap-2">
+                            <button class="p-2 hover:bg-slate-100 rounded-lg">
+                                <span class="material-icons text-slate-400">attach_file</span>
+                            </button>
+                            <button class="p-2 hover:bg-slate-100 rounded-lg">
+                                <span class="material-icons text-slate-400">alternate_email</span>
+                            </button>
+                        </div>
+                        <button onclick="addUpdate()"
+                            class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-blue-600 flex items-center gap-2">
+                            Send Update
+                            <span class="material-icons text-sm">send</span>
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Right Sidebar -->
+            <div class="space-y-6">
+
+                <!-- Ticket Metadata -->
+                <div class="bg-white rounded-xl border border-slate-200 p-6">
+                    <h3 class="font-semibold text-slate-800 mb-4">Ticket Information</h3>
+                    <div class="space-y-3 text-sm">
+                        <div>
+                            <div class="text-xs text-slate-500 uppercase tracking-wide mb-1">Created</div>
+                            <div class="text-slate-900">Jan 15, 2024 at 09:00 AM</div>
+                        </div>
+                        <div>
+                            <div class="text-xs text-slate-500 uppercase tracking-wide mb-1">Last Updated</div>
+                            <div class="text-slate-900">2 hours ago</div>
+                        </div>
+                        <div class="pt-3 border-t border-slate-200">
+                            <div class="text-xs text-slate-500 uppercase tracking-wide mb-1">Service Desk Portal</div>
+                            <div class="text-slate-900">v1.2.0</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="bg-white rounded-xl border border-slate-200 p-6">
+                    <h3 class="font-semibold text-slate-800 mb-4">Quick Actions</h3>
+                    <div class="space-y-2">
+                        <button
+                            class="w-full px-4 py-2 text-left border border-slate-200 rounded-lg hover:bg-slate-50 text-sm flex items-center gap-2">
+                            <span class="material-icons text-slate-400 text-sm">person</span>
+                            Reassign Ticket
+                        </button>
+                        <button
+                            class="w-full px-4 py-2 text-left border border-slate-200 rounded-lg hover:bg-slate-50 text-sm flex items-center gap-2">
+                            <span class="material-icons text-slate-400 text-sm">schedule</span>
+                            Change Priority
+                        </button>
+                        <button
+                            class="w-full px-4 py-2 text-left border border-slate-200 rounded-lg hover:bg-slate-50 text-sm flex items-center gap-2">
+                            <span class="material-icons text-slate-400 text-sm">merge_type</span>
+                            Merge Tickets
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </main>
+
+    <script src="js/app.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            checkAuth();
+            const urlParams = new URLSearchParams(window.location.search);
+            const ticketId = urlParams.get('id');
+            if (ticketId) {
+                refreshTicketDetails(ticketId);
+            }
+        });
+
+        async function refreshTicketDetails(ticketId) {
+            try {
+                const response = await fetch(`${API_URL}/tickets/${ticketId}`, {
+                    headers: getAuthHeaders()
+                });
+                if (!response.ok) {
+                    showError('Failed to load ticket details');
+                    return;
+                }
+                const ticket = await response.json();
+                updateHeaderDetails(ticket);
+                updateResolveButtonState(ticket);
+            } catch (error) {
+                console.error('Error loading ticket:', error);
+                showError('Failed to load ticket details');
+            }
+        }
+
+        function updateHeaderDetails(ticket) {
+            const number = document.getElementById('ticketNumber');
+            const title = document.getElementById('ticketTitle');
+            const badge = document.getElementById('ticketStatusBadge');
+            if (number) number.textContent = `INC-${ticket.id}`;
+            if (title) title.textContent = ticket.title || 'Ticket Details';
+            if (badge) {
+                const status = ticket.status || 'OPEN';
+                badge.textContent = status;
+                badge.className = `px-2 py-0.5 rounded text-xs font-medium uppercase ${getStatusBadgeClass(status)}`;
+            }
+        }
+
+        function updateResolveButtonState(ticket) {
+            const button = document.getElementById('resolveTicketButton');
+            const closeButton = document.getElementById('closeTicketButton');
+            const user = getCurrentUser();
+            const role = user ? user.role : '';
+            const canResolve = role === 'ENGINEER' || role === 'SUPPORT_ENGINEER' || role === 'ADMIN';
+            const canClose = role === 'FACULTY';
+
+            if (!button) return;
+            const disabled = ticket.status !== 'IN_PROGRESS';
+            button.disabled = disabled;
+            button.classList.toggle('opacity-50', disabled);
+            button.classList.toggle('cursor-not-allowed', disabled);
+            button.classList.toggle('hidden', !canResolve);
+
+            if (closeButton) {
+                const closeDisabled = ticket.status !== 'RESOLVED';
+                closeButton.disabled = closeDisabled;
+                closeButton.classList.toggle('opacity-50', closeDisabled);
+                closeButton.classList.toggle('cursor-not-allowed', closeDisabled);
+                closeButton.classList.toggle('hidden', !canClose);
+            }
+        }
+
+        function getStatusBadgeClass(status) {
+            switch (status) {
+                case 'OPEN':
+                    return 'bg-blue-100 text-blue-700';
+                case 'ASSIGNED':
+                    return 'bg-yellow-100 text-yellow-700';
+                case 'IN_PROGRESS':
+                    return 'bg-purple-100 text-purple-700';
+                case 'RESOLVED':
+                    return 'bg-green-100 text-green-700';
+                case 'CLOSED':
+                    return 'bg-slate-100 text-slate-700';
+                default:
+                    return 'bg-slate-100 text-slate-700';
+            }
+        }
+
+        function handleResolveFromHeader() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const ticketId = urlParams.get('id');
+            if (!ticketId) {
+                showError('Missing ticket ID');
+                return;
+            }
+            showResolveModal(ticketId);
+        }
+
+        function handleCloseFromHeader() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const ticketId = urlParams.get('id');
+            if (!ticketId) {
+                showError('Missing ticket ID');
+                return;
+            }
+            closeTicket(ticketId);
+        }
+
+        function appendActivityLogEntry(title, message) {
+            const list = document.getElementById('activityLogList');
+            if (!list) return;
+            const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            const entry = document.createElement('div');
+            entry.className = 'flex gap-4';
+            entry.innerHTML = `
+                <div class="flex flex-col items-center">
+                    <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+                        <span class="material-icons text-green-600 text-sm">check_circle</span>
+                    </div>
+                    <div class="w-0.5 h-full bg-slate-200 mt-2"></div>
+                </div>
+                <div class="flex-1 pb-6">
+                    <div class="flex items-start justify-between mb-1">
+                        <div class="font-medium text-slate-900">${title}</div>
+                        <div class="text-xs text-slate-500">${time}</div>
+                    </div>
+                    <div class="text-sm text-slate-600">${message}</div>
+                </div>
+            `;
+            list.prepend(entry);
+        }
+
+        function addUpdate() {
+            const comment = document.getElementById('updateComment').value;
+            if (!comment) {
+                showError('Please enter a comment');
+                return;
+            }
+            showSuccess('Update added successfully!');
+            document.getElementById('updateComment').value = '';
+        }
+    </script>
+</body>
+
+</html>

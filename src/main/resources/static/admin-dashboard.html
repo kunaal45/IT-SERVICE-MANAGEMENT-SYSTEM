@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Command Center - ITSM</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "background-light": "#f6f7f8",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                },
+            },
+        }
+    </script>
+    <style>
+        body {
+            font-family: Inter, sans-serif;
+        }
+
+        .sidebar-link {
+            transition: all 0.2s;
+        }
+
+        .sidebar-link:hover {
+            background-color: rgba(19, 127, 236, 0.1);
+        }
+
+        .sidebar-link.active {
+            background-color: #137fec;
+            color: white;
+        }
+    </style>
+</head>
+
+<body class="bg-background-light min-h-screen font-display">
+
+    <!-- Main Container -->
+    <div class="flex h-screen overflow-hidden">
+
+        <!-- Sidebar -->
+        <aside class="w-64 bg-white border-r border-slate-200 flex flex-col">
+            <!-- Logo -->
+            <div class="p-6 border-b border-slate-200">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
+                        <span class="material-icons text-white text-2xl">settings_suggest</span>
+                    </div>
+                    <div>
+                        <h1 class="text-lg font-bold text-slate-800">ITSM</h1>
+                        <p class="text-xs text-slate-500">CMD</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Navigation -->
+            <nav class="flex-1 p-4 space-y-2">
+                <a href="admin-dashboard.html"
+                    class="sidebar-link active flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium">
+                    <span class="material-icons text-xl">dashboard</span>
+                    <span>Command Center</span>
+                </a>
+                <a href="settings.html"
+                    class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50">
+                    <span class="material-icons text-xl">speed</span>
+                    <span>SLA Reports</span>
+                </a>
+            </nav>
+
+            <!-- Settings & Logout -->
+            <div class="p-4 border-t border-slate-200 space-y-2">
+                <button onclick="logout()"
+                    class="w-full sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50">
+                    <span class="material-icons text-xl">logout</span>
+                    <span>Logout</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <div class="flex-1 flex flex-col overflow-hidden">
+
+            <!-- Header -->
+            <header class="bg-white border-b border-slate-200 px-8 py-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h2 class="text-2xl font-bold text-slate-800">Admin Command Center</h2>
+                        <p class="text-sm text-slate-500">System oversight and ticket triage dashboard</p>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <div class="relative">
+                            <input type="text" placeholder="Search tickets, assets, or users..."
+                                class="w-96 pl-10 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary">
+                            <span
+                                class="material-icons absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xl">search</span>
+                        </div>
+                        <button class="relative p-2 text-slate-600 hover:bg-slate-100 rounded-lg">
+                            <span class="material-icons">notifications</span>
+                            <span class="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+                        </button>
+
+                        <!-- Profile Dropdown -->
+                        <div class="relative group z-50">
+                            <button onclick="toggleProfileMenu()" onblur="setTimeout(() => closeProfileMenu(), 200)"
+                                class="flex items-center gap-3 pl-4 border-l border-slate-200 hover:bg-slate-50 p-2 rounded-lg transition-colors">
+                                <div class="text-right">
+                                    <div id="userName" class="text-sm font-medium text-slate-800">Admin User</div>
+                                    <div class="text-xs text-slate-500">SYSTEM OVERSEER</div>
+                                </div>
+                                <div
+                                    class="w-10 h-10 bg-gradient-to-br from-primary to-blue-600 rounded-full flex items-center justify-center text-white font-semibold">
+                                    A
+                                </div>
+                            </button>
+
+                            <!-- Dropdown Menu -->
+                            <div id="profileMenu"
+                                class="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-slate-100 overflow-hidden hidden transition-all duration-200 origin-top-right">
+                                <div class="p-2">
+                                    <a href="#"
+                                        class="flex items-center gap-2 px-3 py-2 text-sm text-slate-600 hover:bg-slate-50 rounded-lg">
+                                        <span class="material-icons text-lg">person</span>
+                                        Profile
+                                    </a>
+                                    <a href="settings.html"
+                                        class="flex items-center gap-2 px-3 py-2 text-sm text-slate-600 hover:bg-slate-50 rounded-lg">
+                                        <span class="material-icons text-lg">settings</span>
+                                        Settings
+                                    </a>
+                                    <div class="h-px bg-slate-100 my-1"></div>
+                                    <button onclick="logout()"
+                                        class="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg">
+                                        <span class="material-icons text-lg">logout</span>
+                                        Logout
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Content Area -->
+            <main class="flex-1 overflow-y-auto p-8">
+
+                <!-- Statistics Cards -->
+                <div class="grid grid-cols-4 gap-6 mb-8">
+                    <!-- SLA Breaches -->
+                    <div class="bg-white rounded-xl border border-slate-200 p-6">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
+                                <span class="material-icons text-red-600 text-2xl">warning</span>
+                            </div>
+                            <span class="text-xs font-semibold text-red-600 uppercase tracking-wide">High Urgency</span>
+                        </div>
+                        <div class="mb-1">
+                            <div class="text-sm text-slate-600 mb-1">SLA Breaches</div>
+                            <div id="breachedTickets" class="text-3xl font-bold text-slate-900">12</div>
+                        </div>
+                        <div class="flex items-center gap-1 text-xs text-red-600">
+                            <span class="material-icons text-sm">trending_up</span>
+                            <span>+2 from last hour</span>
+                        </div>
+                    </div>
+
+                    <!-- Unassigned -->
+                    <div class="bg-white rounded-xl border border-slate-200 p-6">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
+                                <span class="material-icons text-orange-600 text-2xl">group_add</span>
+                            </div>
+                            <span class="text-xs font-semibold text-orange-600 uppercase tracking-wide">Pending
+                                Action</span>
+                        </div>
+                        <div class="mb-1">
+                            <div class="text-sm text-slate-600 mb-1">Unassigned</div>
+                            <div id="unassignedTickets" class="text-3xl font-bold text-slate-900">28</div>
+                        </div>
+                        <div class="flex items-center gap-1 text-xs text-orange-600">
+                            <span class="material-icons text-sm">schedule</span>
+                            <span>Needs triage immediately</span>
+                        </div>
+                    </div>
+
+                    <!-- Total Active -->
+                    <div class="bg-white rounded-xl border border-slate-200 p-6">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                                <span class="material-icons text-blue-600 text-2xl">confirmation_number</span>
+                            </div>
+                            <span class="text-xs font-semibold text-blue-600 uppercase tracking-wide">In Progress</span>
+                        </div>
+                        <div class="mb-1">
+                            <div class="text-sm text-slate-600 mb-1">Total Active</div>
+                            <div id="totalTickets" class="text-3xl font-bold text-slate-900">142</div>
+                        </div>
+                        <div class="flex items-center gap-1 text-xs text-blue-600">
+                            <span class="material-icons text-sm">update</span>
+                            <span>Updated 2 mins ago</span>
+                        </div>
+                    </div>
+
+                    <!-- Resolved Today -->
+                    <div class="bg-white rounded-xl border border-slate-200 p-6">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                                <span class="material-icons text-green-600 text-2xl">check_circle</span>
+                            </div>
+                            <span class="text-xs font-semibold text-green-600 uppercase tracking-wide">Completed</span>
+                        </div>
+                        <div class="mb-1">
+                            <div class="text-sm text-slate-600 mb-1">Resolved Today</div>
+                            <div id="resolvedTickets" class="text-3xl font-bold text-slate-900">84</div>
+                        </div>
+                        <div class="flex items-center gap-1 text-xs text-green-600">
+                            <span class="material-icons text-sm">trending_up</span>
+                            <span>12% above average</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Main Content Grid -->
+                <div class="grid grid-cols-3 gap-6">
+
+                    <!-- Ticket Queue (2 columns) -->
+                    <div class="col-span-2 bg-white rounded-xl border border-slate-200 overflow-hidden">
+                        <div class="p-6 border-b border-slate-200 flex items-center justify-between">
+                            <div>
+                                <h3 class="text-lg font-semibold text-slate-800">Global Ticket Queue</h3>
+                                <p class="text-sm text-slate-500">Showing 10 of 142</p>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <button
+                                    class="px-3 py-1.5 text-sm border border-slate-200 rounded-lg hover:bg-slate-50 flex items-center gap-1">
+                                    <span class="material-icons text-sm">filter_list</span>
+                                    Filter
+                                </button>
+                                <button
+                                    class="px-3 py-1.5 text-sm border border-slate-200 rounded-lg hover:bg-slate-50 flex items-center gap-1">
+                                    <span class="material-icons text-sm">sort</span>
+                                    Sort
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="overflow-x-auto">
+                            <table class="w-full">
+                                <thead class="bg-slate-50 border-b border-slate-200">
+                                    <tr class="text-xs font-semibold text-slate-600 uppercase tracking-wide">
+                                        <th class="px-6 py-3 text-left">ID</th>
+                                        <th class="px-6 py-3 text-left">Ticket Description</th>
+                                        <th class="px-6 py-3 text-left">Priority</th>
+                                        <th class="px-6 py-3 text-left">Status</th>
+                                        <th class="px-6 py-3 text-left">Assigned To</th>
+                                        <th class="px-6 py-3 text-right">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="allTicketsList" class="divide-y divide-slate-100">
+                                    <!-- Populated by JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="p-4 border-t border-slate-200 flex items-center justify-between">
+                            <button class="px-3 py-1.5 text-sm text-slate-600 hover:text-slate-800">← Previous</button>
+                            <div class="flex items-center gap-1">
+                                <button class="w-8 h-8 rounded bg-primary text-white text-sm font-medium">1</button>
+                                <button class="w-8 h-8 rounded hover:bg-slate-100 text-sm font-medium">2</button>
+                                <button class="w-8 h-8 rounded hover:bg-slate-100 text-sm font-medium">3</button>
+                                <span class="px-2 text-slate-400">...</span>
+                                <button class="w-8 h-8 rounded hover:bg-slate-100 text-sm font-medium">15</button>
+                            </div>
+                            <button class="px-3 py-1.5 text-sm text-slate-600 hover:text-slate-800">Next →</button>
+                        </div>
+                    </div>
+
+                    <!-- Right Column -->
+                    <div class="space-y-6">
+
+                        <!-- Ticket Summary -->
+                        <div class="bg-white rounded-xl border border-slate-200 p-6">
+                            <h3 class="text-lg font-semibold text-slate-800 mb-4">Ticket Summary</h3>
+                            <div class="space-y-4">
+                                <div class="flex items-center justify-between">
+                                    <div class="text-sm text-slate-600">Total Tickets</div>
+                                    <div class="text-lg font-semibold text-slate-900">142</div>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <div class="text-sm text-slate-600">Open Tickets</div>
+                                    <div class="text-lg font-semibold text-slate-900">31</div>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <div class="text-sm text-slate-600">Resolved Tickets</div>
+                                    <div class="text-lg font-semibold text-slate-900">84</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Recent Activity -->
+                        <div class="bg-white rounded-xl border border-slate-200 p-6">
+                            <div class="flex items-center justify-between mb-4">
+                                <h3 class="text-lg font-semibold text-slate-800">Recent Activity</h3>
+                                <a href="audit_logs.html" class="text-sm text-primary hover:underline">View All Logs</a>
+                            </div>
+                            <div class="space-y-4">
+                                <div class="flex gap-3">
+                                    <div
+                                        class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+                                        <span class="material-icons text-green-600 text-sm">check</span>
+                                    </div>
+                                    <div class="flex-1">
+                                        <p class="text-sm font-medium text-slate-800">#INC-4100 was resolved by</p>
+                                        <p class="text-sm text-slate-600">Elena Vance</p>
+                                        <p class="text-xs text-slate-400 mt-1">3 mins ago</p>
+                                    </div>
+                                </div>
+                                <div class="flex gap-3">
+                                    <div
+                                        class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                                        <span class="material-icons text-blue-600 text-sm">comment</span>
+                                    </div>
+                                    <div class="flex-1">
+                                        <p class="text-sm font-medium text-slate-800">System Admin commented</p>
+                                        <p class="text-sm text-slate-600">on ticket #INC-4201</p>
+                                        <p class="text-xs text-slate-400 mt-1">14 mins ago</p>
+                                    </div>
+                                </div>
+                                <div class="flex gap-3">
+                                    <div
+                                        class="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
+                                        <span class="material-icons text-red-600 text-sm">warning</span>
+                                    </div>
+                                    <div class="flex-1">
+                                        <p class="text-sm font-medium text-slate-800">High Priority #INC-4215</p>
+                                        <p class="text-sm text-slate-600">reported from London Office</p>
+                                        <p class="text-xs text-slate-400 mt-1">28 mins ago</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+            </main>
+        </div>
+    </div>
+
+    <script src="js/app.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            checkAuth();
+            loadUserInfo();
+            loadStats();
+            loadAllTickets();
+        });
+
+        function toggleProfileMenu() {
+            const menu = document.getElementById('profileMenu');
+            // Toggle hidden class
+            if (menu.classList.contains('hidden')) {
+                menu.classList.remove('hidden');
+            } else {
+                menu.classList.add('hidden');
+            }
+        }
+
+        function closeProfileMenu() {
+            // Slight delay to allow clicking links inside
+            const menu = document.getElementById('profileMenu');
+            if (!menu.matches(':hover')) {
+                menu.classList.add('hidden');
+            }
+        }
+
+        // Load tickets on page load
+        document.addEventListener('DOMContentLoaded', function () {
+            loadAdminTickets();
+        });
+
+        // Load and display all tickets for admin
+        async function loadAdminTickets() {
+            try {
+                const tickets = await fetchAllTickets();
+                const ticketsContainer = document.getElementById('allTicketsList');
+                
+                if (!tickets || tickets.length === 0) {
+                    ticketsContainer.innerHTML = '<tr><td colspan="6" class="px-6 py-4 text-center text-slate-500">No tickets found</td></tr>';
+                    return;
+                }
+
+                ticketsContainer.innerHTML = tickets.map((ticket, index) => `
+                    <tr class="hover:bg-slate-50 transition-colors cursor-pointer" onclick="viewTicket(${ticket.id})">
+                        <td class="px-6 py-4 text-sm font-medium text-slate-900">#${ticket.id}</td>
+                        <td class="px-6 py-4 text-sm text-slate-900">
+                            <div class="font-medium">${ticket.title}</div>
+                            <div class="text-xs text-slate-500">${ticket.description ? ticket.description.substring(0, 50) : ''}</div>
+                        </td>
+                        <td class="px-6 py-4 text-sm">
+                            <span class="px-2 py-1 rounded text-xs font-medium ${getPriorityColor(ticket.priority)}">
+                                ${ticket.priority || 'N/A'}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 text-sm">
+                            <span class="px-2 py-1 rounded text-xs font-medium ${getStatusColor(ticket.status)}">
+                                ${ticket.status || 'OPEN'}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 text-sm text-slate-600">
+                            ${ticket.assignedTo ? ticket.assignedTo.name : 'Unassigned'}
+                        </td>
+                        <td class="px-6 py-4 text-right">
+                            <button class="text-primary hover:text-primary/80 text-sm font-medium" onclick="viewTicket(${ticket.id})">
+                                View
+                            </button>
+                        </td>
+                    </tr>
+                `).join('');
+
+                // Update statistics
+                updateTicketStatistics(tickets);
+            } catch (error) {
+                console.error('Error loading tickets:', error);
+            }
+        }
+
+        function getPriorityColor(priority) {
+            switch(priority) {
+                case 'HIGH':
+                case 'CRITICAL':
+                    return 'bg-red-100 text-red-800';
+                case 'MEDIUM':
+                    return 'bg-yellow-100 text-yellow-800';
+                case 'LOW':
+                    return 'bg-green-100 text-green-800';
+                default:
+                    return 'bg-slate-100 text-slate-800';
+            }
+        }
+
+        function getStatusColor(status) {
+            switch(status) {
+                case 'OPEN':
+                    return 'bg-blue-100 text-blue-800';
+                case 'ASSIGNED':
+                    return 'bg-purple-100 text-purple-800';
+                case 'IN_PROGRESS':
+                    return 'bg-orange-100 text-orange-800';
+                case 'RESOLVED':
+                case 'CLOSED':
+                    return 'bg-green-100 text-green-800';
+                default:
+                    return 'bg-slate-100 text-slate-800';
+            }
+        }
+
+        function updateTicketStatistics(tickets) {
+            // Calculate statistics
+            const breachedCount = tickets.filter(t => t.slaBreached).length;
+            const unassignedCount = tickets.filter(t => !t.assignedTo).length;
+            const openCount = tickets.filter(t => t.status === 'OPEN').length;
+            const resolvedCount = tickets.filter(t => t.status === 'RESOLVED' || t.status === 'CLOSED').length;
+
+            // Update display
+            document.getElementById('breachedTickets').textContent = breachedCount;
+            document.getElementById('unassignedTickets').textContent = unassignedCount;
+        }
+
+        function viewTicket(ticketId) {
+            window.location.href = `ticket-details.html?id=${ticketId}`;
+        }
+    </script>
+</body>
+
+</html>

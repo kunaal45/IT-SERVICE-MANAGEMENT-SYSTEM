@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tickets - ITSM</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+</head>
+
+<body class="bg-background-light min-h-screen">
+    <header class="bg-white shadow-sm border-b py-4">
+        <div class="max-w-6xl mx-auto px-4 flex justify-between items-center">
+            <div class="flex items-center gap-4">
+                <a href="admin-dashboard.html"
+                    class="mr-2 p-2 text-slate-500 hover:text-primary transition-colors hover:bg-slate-50 rounded-lg flex items-center"
+                    title="Back to Dashboard">
+                    <span class="material-icons">arrow_back</span>
+                </a>
+                <div class="inline-flex items-center justify-center w-10 h-10 bg-primary rounded-lg text-white">
+                    <span class="material-icons">settings_suggest</span>
+                </div>
+                <div>
+                    <h1 class="text-lg font-semibold text-slate-800">Tickets</h1>
+                    <p class="text-sm text-slate-500">Browse and manage tickets</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-4">
+                <div class="text-sm text-slate-600 text-right">
+                    <div id="userName">User</div>
+                    <div id="userEmail" class="text-xs">email</div>
+                </div>
+                <button onclick="logout()"
+                    class="px-3 py-2 bg-red-500 text-white rounded hover:bg-red-600">Logout</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-6xl mx-auto p-6 grid gap-6">
+        <section class="bg-white rounded-lg border p-4">
+            <table class="w-full text-left">
+                <thead>
+                    <tr class="text-xs text-slate-500">
+                        <th class="px-4 py-2">Ticket</th>
+                        <th class="px-4 py-2">Status</th>
+                        <th class="px-4 py-2">SLA</th>
+                        <th class="px-4 py-2 text-right">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="tickets-container" class="divide-y"></tbody>
+            </table>
+        </section>
+    </main>
+
+    <script src="app.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            checkAuth();
+            loadUserInfo();
+            loadTickets();
+        });
+    </script>
+</body>
+
+</html>
