@@ -5,5 +5,9 @@ public enum IssueCategory {
     SOFTWARE,
     NETWORK,
     ACCESS,
+    PORTAL_WEBSITE,
+    INFRASTRUCTURE,
+    ATTENDANCE_SYSTEM,
+    RESOURCE_REQUEST,
     OTHER
 }

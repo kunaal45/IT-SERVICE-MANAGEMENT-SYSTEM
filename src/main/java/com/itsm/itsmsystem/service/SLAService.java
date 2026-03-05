@@ -24,4 +24,11 @@ public class SLAService {
         return slaRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("SLA Rule not found"));
     }
+
+    public SLARule updateSLARule(String priority, Integer maxHours) {
+        SLARule rule = slaRepository.findByPriority(priority)
+                .orElseThrow(() -> new ResourceNotFoundException("SLA Rule not found for priority: " + priority));
+        rule.setMaxHours(maxHours);
+        return slaRepository.save(rule);
+    }
 }

@@ -1,5 +1,6 @@
 package com.itsm.itsmsystem.service;
 
+import com.itsm.itsmsystem.enums.Role;
 import com.itsm.itsmsystem.exception.ResourceNotFoundException;
 import com.itsm.itsmsystem.model.entity.User;
 import com.itsm.itsmsystem.repository.UserRepository;
@@ -16,15 +17,19 @@ public class UserService {
 
     public User getUserByEmail(String email) {
         return userRepository.findByEmail(email)
-            .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + email));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + email));
     }
 
     public User getUserById(Long id) {
         return userRepository.findById(id)
-            .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
     }
 
     public List<User> getAllUsers() {
         return userRepository.findAll();
+    }
+
+    public List<User> getUsersByRole(Role role) {
+        return userRepository.findByRole(role);
     }
 }

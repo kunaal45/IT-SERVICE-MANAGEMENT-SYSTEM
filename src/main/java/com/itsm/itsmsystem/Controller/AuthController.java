@@ -1,4 +1,4 @@
-package com.itsm.itsmsystem.controller;
+package com.itsm.itsmsystem.Controller;
 
 import com.itsm.itsmsystem.dto.ApiResponse;
 import com.itsm.itsmsystem.dto.LoginRequest;

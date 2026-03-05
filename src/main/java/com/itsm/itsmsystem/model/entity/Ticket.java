@@ -12,24 +12,23 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "tickets", indexes = {
-    @Index(name = "idx_ticket_status", columnList = "status"),
-    @Index(name = "idx_ticket_priority", columnList = "priority"),
-    @Index(name = "idx_ticket_created_by", columnList = "created_by_id"),
-    @Index(name = "idx_ticket_assigned_to", columnList = "assigned_to_id"),
-    @Index(name = "idx_ticket_issue", columnList = "issue_id")
+        @Index(name = "idx_ticket_status", columnList = "status"),
+        @Index(name = "idx_ticket_priority", columnList = "priority"),
+        @Index(name = "idx_ticket_created_by", columnList = "created_by_id"),
+        @Index(name = "idx_ticket_assigned_to", columnList = "assigned_to_id"),
+        @Index(name = "idx_ticket_issue", columnList = "issue_id")
 })
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class Ticket {
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // Link to the Issue that created this ticket
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "issue_id", nullable = true)  // Nullable for backward compatibility with existing demo data
+    @JoinColumn(name = "issue_id", nullable = true)
     private Issue issue;
 
     @Column(nullable = false, length = 255)
@@ -69,22 +68,26 @@ public class Ticket {
 
     @Column(name = "resolved_at")
     private LocalDateTime resolvedAt;
-    
+
     @Column(name = "closed_at")
     private LocalDateTime closedAt;
-    
-    // Resolution notes - what was done to fix the issue
+
     @Column(columnDefinition = "TEXT")
     private String resolutionNotes;
-    
-    // For resource requests - quantity needed
+
     @Column
     private Integer quantity;
-    
-    // Flag to indicate if this is a resource request
+
     @Column(name = "resource_request")
     private Boolean resourceRequest;
-    
+
+    // SLA fields
+    @Column(name = "sla_deadline")
+    private LocalDateTime slaDeadline;
+
+    @Column(name = "sla_breached")
+    private Boolean slaBreached;
+
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
@@ -95,8 +98,11 @@ public class Ticket {
         if (resourceRequest == null) {
             resourceRequest = false;
         }
+        if (slaBreached == null) {
+            slaBreached = false;
+        }
     }
-    
+
     @PreUpdate
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();
