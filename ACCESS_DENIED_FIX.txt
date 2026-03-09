@@ -1,0 +1,127 @@
+╔═══════════════════════════════════════════════════════════════╗
+║                                                                 ║
+║           ⚠️  ACCESS DENIED - TROUBLESHOOTING GUIDE ⚠️          ║
+║                                                                 ║
+╚═══════════════════════════════════════════════════════════════╝
+
+
+🔍 WHAT IS HAPPENING?
+──────────────────────
+
+If you see "Access Denied" when opening http://localhost:8080,
+it means the application needs you to LOG IN first.
+
+
+✅ THE FIX - LOGIN WITH THESE CREDENTIALS:
+──────────────────────────────────────────
+
+Email:    admin@college.edu
+Password: admin123
+
+These credentials will be created automatically when the app starts.
+
+
+📝 HOW TO LOGIN:
+─────────────────
+
+1. Open: http://localhost:8080
+
+2. You should see a LOGIN PAGE with two input fields:
+   • Email field
+   • Password field
+
+3. Enter:
+   Email:    admin@college.edu
+   Password: admin123
+
+4. Click "Login" or "Sign In" button
+
+5. Click ENTER or wait for page to load
+
+6. You should now see the ITSM Dashboard
+
+
+═══════════════════════════════════════════════════════════════
+
+
+🎓 DEMO USER ACCOUNTS:
+──────────────────────
+
+Admin Account (Full Access):
+  Email: admin@college.edu
+  Password: admin123
+  Role: ADMIN
+
+Engineer Account:
+  Email: priya@college.edu
+  Password: eng123
+  Role: ENGINEER
+
+Faculty Account:
+  Email: rajesh@college.edu
+  Password: faculty123
+  Role: FACULTY
+
+
+═══════════════════════════════════════════════════════════════
+
+
+⚠️ IF YOU STILL GET ACCESS DENIED:
+───────────────────────────────────
+
+Check these things:
+
+1. Is the application still running?
+   Look for: "Started ItsmSystemApplication" in console
+   If not: Run .\mvnw.cmd spring-boot:run
+
+
+2. Are you trying to access the right URL?
+   Should be: http://localhost:8080
+   NOT: http://localhost:8080/api
+   NOT: http://localhost:8080/admin
+
+
+3. Did the database fix work?
+   • Open MySQL Workbench
+   • Run: SELECT * FROM users;
+   • Should show 7 users (admin, engineers, faculty)
+   • If empty: Database didn't initialize properly
+
+
+4. Check browser console (F12):
+   • Press F12 to open Developer Tools
+   • Go to "Console" tab
+   • Look for error messages
+   • Share the errors with me
+
+
+═══════════════════════════════════════════════════════════════
+
+
+🔐 SECURITY NOTE:
+──────────────────
+
+The application uses JWT (JSON Web Tokens) for authentication.
+
+When you login:
+  1. System checks your email and password
+  2. If correct: Creates a JWT token
+  3. Token is stored in browser
+  4. All future requests use this token
+  5. Token expires after 24 hours
+
+
+═══════════════════════════════════════════════════════════════
+
+
+💡 WHAT TO DO:
+────────────────
+
+1. Try logging in with the credentials above
+2. If it works: You're done! 🎉
+3. If not: Check the troubleshooting steps
+4. If still not working: Share the error message
+
+
+═══════════════════════════════════════════════════════════════

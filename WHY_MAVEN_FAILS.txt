@@ -1,0 +1,115 @@
+═══════════════════════════════════════════════════════════════
+                    WHY MAVEN IS NOT RUNNING
+═══════════════════════════════════════════════════════════════
+
+PROBLEM DIAGNOSIS:
+------------------
+
+Maven is failing because of TWO issues:
+
+1. ❌ DATABASE ERROR
+   → Role column in 'users' table is too small
+   → Cannot insert "ENGINEER" or "FACULTY" values
+   → Error: "Data truncated for column 'role' at row 2"
+
+2. ❌ OLD COMPILED FILES
+   → The 'target/classes/' folder has OLD .class files
+   → These files were compiled with WRONG package names
+   → Even though source code is fixed, Maven uses cached files
+   → Error: "Package mismatch: controller vs Controller"
+
+═══════════════════════════════════════════════════════════════
+                         THE SOLUTION
+═══════════════════════════════════════════════════════════════
+
+YOU MUST DO BOTH FIXES:
+
+┌─────────────────────────────────────────────────────────────┐
+│ FIX #1: DATABASE (Do this in MySQL Workbench)              │
+└─────────────────────────────────────────────────────────────┘
+
+Open MySQL Workbench and run:
+
+    USE itsm_db;
+    ALTER TABLE users MODIFY COLUMN role VARCHAR(20) NOT NULL;
+
+OR open and execute: FIX_DATABASE.sql
+
+┌─────────────────────────────────────────────────────────────┐
+│ FIX #2: DELETE TARGET FOLDER (Do this in PowerShell)       │
+└─────────────────────────────────────────────────────────────┘
+
+Option A - Use PowerShell Script:
+    .\COMPLETE_FIX.ps1
+
+Option B - Manual Commands:
+    Remove-Item -Path target -Recurse -Force
+    .\mvnw.cmd spring-boot:run
+
+Option C - Use Batch File:
+    1. Double-click: FORCE_CLEAN.bat
+    2. Then run: .\mvnw.cmd spring-boot:run
+
+═══════════════════════════════════════════════════════════════
+                    WHY "mvnw clean" ISN'T ENOUGH
+═══════════════════════════════════════════════════════════════
+
+The 'mvnw clean' command sometimes doesn't delete everything
+if there are file locks or corrupted files.
+
+SOLUTION: Manually delete the 'target' folder entirely
+
+═══════════════════════════════════════════════════════════════
+                    RECOMMENDED: 3 SIMPLE STEPS
+═══════════════════════════════════════════════════════════════
+
+STEP 1: Fix Database
+        Open MySQL Workbench → Execute FIX_DATABASE.sql
+        
+STEP 2: Delete Target Folder
+        In File Explorer: Right-click 'target' folder → Delete
+        
+STEP 3: Run Application
+        In PowerShell: .\mvnw.cmd spring-boot:run
+
+═══════════════════════════════════════════════════════════════
+                        QUICK COMMANDS
+═══════════════════════════════════════════════════════════════
+
+After fixing database, run this in PowerShell:
+
+    if (Test-Path target) { Remove-Item target -Recurse -Force }
+    .\mvnw.cmd spring-boot:run
+
+═══════════════════════════════════════════════════════════════
+                         AUTOMATION OPTION
+═══════════════════════════════════════════════════════════════
+
+Use the complete fix script (does everything except DB):
+
+    .\COMPLETE_FIX.ps1
+
+It will:
+    1. Remind you to fix database
+    2. Delete target folder
+    3. Run the application
+
+═══════════════════════════════════════════════════════════════
+                    EXPECTED SUCCESS OUTPUT
+═══════════════════════════════════════════════════════════════
+
+After running, you should see:
+
+    Started ItsmSystemApplication in X.XXX seconds
+
+Then open: http://localhost:8080
+
+═══════════════════════════════════════════════════════════════
+
+SUMMARY: Maven won't run because:
+         - Database has wrong schema (fix in MySQL Workbench)
+         - Target folder has bad compiled files (delete it)
+
+SOLUTION: Fix database + Delete target folder + Run Maven
+
+═══════════════════════════════════════════════════════════════

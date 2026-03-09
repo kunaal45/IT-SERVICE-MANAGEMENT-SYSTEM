@@ -1,0 +1,60 @@
+╔════════════════════════════════════════════════════════════════════════════╗
+║                                                                            ║
+║              ✅ ITSM REBUILD COMPLETE - QUICK REFERENCE ✅                 ║
+║                                                                            ║
+╚════════════════════════════════════════════════════════════════════════════╝
+
+
+🚀 BUILD NOW:
+═════════════════════════════════════════════════════════════════════════════
+
+Remove-Item -Path target -Recurse -Force
+.\mvnw.cmd clean spring-boot:run
+
+
+✅ WILL BOOT WITH:
+═════════════════════════════════════════════════════════════════════════════
+
+✓ 5 users (admin, 2 engineers, 2 faculty)
+✓ 10 issues with auto-created tickets
+✓ All in MySQL database
+✓ Audit logs for all actions
+
+
+🔐 LOGIN CREDENTIALS:
+═════════════════════════════════════════════════════════════════════════════
+
+Admin:    admin@itsm.com / admin123
+Engineer: engineer@itsm.com / eng123
+Faculty:  faculty@itsm.com / faculty123
+
+
+📊 DEMO DATA:
+═════════════════════════════════════════════════════════════════════════════
+
+Admin Dashboard:    GET /api/dashboard/admin
+Engineer Dashboard: GET /api/dashboard/engineer
+Faculty Dashboard:  GET /api/dashboard/faculty
+
+Create Issue:       POST /api/issues (Faculty only)
+List My Tickets:    GET /api/tickets/my?page=0&size=10
+
+
+✨ SYSTEM FEATURES:
+═════════════════════════════════════════════════════════════════════════════
+
+✓ Faculty creates issue → Auto-creates ticket
+✓ Admin assigns tickets
+✓ Engineer works on tickets (workflow: OPEN→ASSIGNED→IN_PROGRESS→RESOLVED→CLOSED)
+✓ Dashboards show real database numbers
+✓ Pagination on all listings
+✓ Audit logs for everything
+✓ Role-based security
+✓ JWT authentication
+
+
+═════════════════════════════════════════════════════════════════════════════
+
+BUILD & RUN NOW - EVERYTHING IS READY!
+
+═════════════════════════════════════════════════════════════════════════════
