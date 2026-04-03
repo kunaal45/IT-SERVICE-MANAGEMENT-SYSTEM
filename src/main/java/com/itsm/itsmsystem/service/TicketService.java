@@ -262,15 +262,7 @@ public class TicketService {
     public List<Ticket> getTicketsByRole(User user) {
         return switch (user.getRole()) {
             case ADMIN, SERVICE_DESK -> ticketRepository.findAll();
-
-            // ENGINEER: only tickets currently assigned to them AND still active
-            // Tickets that are RESOLVED, CLOSED, or reassigned away are excluded
-            case ENGINEER -> ticketRepository.findByAssignedToIdAndStatusNotIn(
-                    user.getId(),
-                    List.of(TicketStatus.RESOLVED, TicketStatus.CLOSED)
-            );
-
-            // FACULTY: only tickets they created
+            case ENGINEER -> ticketRepository.findByAssignedToId(user.getId());
             case FACULTY -> ticketRepository.findByCreatedById(user.getId());
         };
     }

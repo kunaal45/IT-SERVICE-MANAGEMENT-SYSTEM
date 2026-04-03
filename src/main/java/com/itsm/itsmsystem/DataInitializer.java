@@ -39,8 +39,8 @@ public class DataInitializer implements CommandLineRunner {
     @Override
     public void run(String... args) {
         try {
-            cleanupLegacyUsers();
             initUsers();
+            cleanupLegacyUsers();
             initSLARules();
 
             if (ticketRepository.count() == 0) {
@@ -74,12 +74,19 @@ public class DataInitializer implements CommandLineRunner {
                     ticketRepository.save(t);
                 });
 
-                // 2. Tickets where this user is the CREATOR: Delete them and their related
-                // logs/comments
+                // 2. Tickets where this user is the CREATOR: Migrated to new System Admin
+                // We find the new system admin to take ownership of these records
+                User systemAdmin = userRepository.findByEmail("system.admin@itsm.com").orElse(null);
                 ticketRepository.findByCreatedById(user.getId()).forEach(t -> {
-                    auditLogRepository.deleteByTicketId(t.getId());
-                    commentRepository.deleteByTicketId(t.getId());
-                    ticketRepository.delete(t);
+                    if (systemAdmin != null) {
+                        t.setCreatedBy(systemAdmin);
+                        ticketRepository.save(t);
+                    } else {
+                        // Fallback: If system admin not found, we delete to avoid orphan records
+                        auditLogRepository.deleteByTicketId(t.getId());
+                        commentRepository.deleteByTicketId(t.getId());
+                        ticketRepository.delete(t);
+                    }
                 });
 
                 // 3. Independent Audit Logs and Comments by this user
