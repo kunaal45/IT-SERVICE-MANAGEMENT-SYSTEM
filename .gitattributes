@@ -1,2 +1,9 @@
+# Force GitHub to recognize this as a Java project
+# Ignore static frontend files for language statistics
+src/main/resources/static/** linguist-language=Java
+src/main/resources/static/** linguist-vendored
+src/main/resources/static/*.html linguist-documentation
+target/** linguist-vendored
+
 /mvnw text eol=lf
 *.cmd text eol=crlf
