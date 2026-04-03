@@ -15,6 +15,9 @@ public interface TicketRepository extends JpaRepository<Ticket, Long> {
 
     List<Ticket> findByAssignedToId(Long userId);
 
+    // Active tickets for engineer dashboard (not RESOLVED or CLOSED)
+    List<Ticket> findByAssignedToIdAndStatusNotIn(Long userId, List<TicketStatus> excludedStatuses);
+
     List<Ticket> findByCreatedById(Long userId);
 
     Page<Ticket> findByAssignedToId(Long userId, Pageable pageable);
