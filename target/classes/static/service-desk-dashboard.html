@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Service Desk Dashboard - ITSM System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/custom.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .sidebar-link {
+            transition: all 0.2s;
+        }
+
+        .sidebar-link:hover {
+            background-color: rgba(19, 127, 236, 0.1);
+        }
+
+        .sidebar-link.active {
+            background-color: #137fec;
+            color: white;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+        }
+
+        .breach-alert {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4);
+            }
+
+            70% {
+                box-shadow: 0 0 0 10px rgba(239, 68, 68, 0);
+            }
+
+            100% {
+                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+            }
+        }
+    </style>
+</head>
+
+<body class="bg-background-light min-h-screen font-display">
+
+    <!-- Main Container -->
+    <div class="flex h-screen overflow-hidden">
+
+        <!-- Sidebar -->
+        <aside class="w-64 bg-white border-r border-slate-200 flex flex-col">
+            <div class="p-6 border-b border-slate-200">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
+                        <span class="material-icons text-white text-2xl">support_agent</span>
+                    </div>
+                    <div>
+                        <h1 class="text-lg font-bold text-slate-800">ITSM</h1>
+                        <p class="text-xs text-slate-500">Service Desk</p>
+                    </div>
+                </div>
+            </div>
+
+            <nav class="flex-1 p-4 space-y-2">
+                <a href="service-desk-dashboard.html"
+                    class="sidebar-link active flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium">
+                    <span class="material-icons text-xl">dashboard</span>
+                    <span>Dashboard</span>
+                </a>
+                <!-- Removed All Tickets and SLA Reports as per request -->
+            </nav>
+
+            <div class="p-4 border-t border-slate-200 space-y-2">
+                <button onclick="logout()"
+                    class="w-full sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50">
+                    <span class="material-icons text-xl">logout</span>
+                    <span>Logout</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <div class="flex-1 flex flex-col overflow-hidden">
+
+            <!-- Header -->
+            <header class="bg-white border-b border-slate-200 px-8 py-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h2 class="text-2xl font-bold text-slate-800">Support Overview</h2>
+                        <p class="text-sm text-slate-500">Monitor all system tickets and manage SLAs</p>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <!-- Profile Dropdown -->
+                        <div class="relative z-50">
+                            <button id="profileBtn" onclick="toggleProfileMenu()"
+                                class="flex items-center gap-3 pl-4 border-l border-slate-200 hover:bg-slate-50 p-2 rounded-lg transition-colors">
+                                <div class="text-right">
+                                    <div id="userName" class="text-sm font-medium text-slate-800">Service Desk Agent
+                                    </div>
+                                    <div class="text-xs text-slate-500">SERVICE DESK</div>
+                                </div>
+                                <div
+                                    class="w-10 h-10 bg-gradient-to-br from-primary to-blue-600 rounded-full flex items-center justify-center text-white font-semibold user-avatar-initial">
+                                    SD</div>
+                            </button>
+
+                            <div id="profileMenu"
+                                class="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-slate-100 overflow-hidden hidden">
+                                <div class="p-2">
+                                    <a href="#"
+                                        class="flex items-center gap-2 px-3 py-2 text-sm text-slate-600 hover:bg-slate-50 rounded-lg">
+                                        <span class="material-icons text-lg">person</span> Profile
+                                    </a>
+                                    <div class="h-px bg-slate-100 my-1"></div>
+                                    <button onclick="logout()"
+                                        class="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg">
+                                        <span class="material-icons text-lg">logout</span> Logout
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Content Area -->
+            <main class="flex-1 overflow-y-auto p-8">
+
+                <!-- Stats Grid -->
+                <div class="grid grid-cols-4 gap-6 mb-8">
+                    <div class="bg-white rounded-xl border border-slate-200 p-6">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                                <span class="material-icons text-blue-600">confirmation_number</span>
+                            </div>
+                        </div>
+                        <div class="text-sm text-slate-600 mb-1">Total Tickets</div>
+                        <div id="totalTickets" class="text-3xl font-bold text-slate-900">--</div>
+                    </div>
+
+                    <div class="bg-white rounded-xl border border-red-200 p-6 breach-alert">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
+                                <span class="material-icons text-red-600">warning</span>
+                            </div>
+                        </div>
+                        <div class="text-sm text-slate-600 mb-1">SLA Breached</div>
+                        <div id="breachedTickets" class="text-3xl font-bold text-red-600">--</div>
+                    </div>
+
+                    <div class="bg-white rounded-xl border border-slate-200 p-6">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="w-12 h-12 bg-amber-100 rounded-lg flex items-center justify-center">
+                                <span class="material-icons text-amber-600">pending_actions</span>
+                            </div>
+                        </div>
+                        <div class="text-sm text-slate-600 mb-1">In Progress</div>
+                        <div id="inProgressTickets" class="text-3xl font-bold text-slate-900">--</div>
+                    </div>
+
+                    <div class="bg-white rounded-xl border border-slate-200 p-6">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                                <span class="material-icons text-green-600">check_circle</span>
+                            </div>
+                        </div>
+                        <div class="text-sm text-slate-600 mb-1">Resolved Today</div>
+                        <div id="resolvedTickets" class="text-3xl font-bold text-slate-900">--</div>
+                    </div>
+                </div>
+
+                <!-- Global Ticket Queue -->
+                <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
+                    <div class="p-6 border-b border-slate-200 flex justify-between items-center">
+                        <div>
+                            <h3 class="text-lg font-bold text-slate-800">Global Ticket Queue</h3>
+                            <p class="text-sm text-slate-500">Monitor all system tickets and manage SLAs</p>
+                        </div>
+                        <button onclick="refreshData()"
+                            class="px-3 py-1.5 text-sm border border-slate-200 rounded-lg hover:bg-slate-50 flex items-center gap-1">
+                            <span class="material-icons text-sm">refresh</span> Refresh
+                        </button>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead class="bg-slate-50 border-b border-slate-200">
+                                <tr class="text-xs font-semibold text-slate-600 uppercase tracking-wide">
+                                    <th class="px-6 py-3 text-left">Ticket</th>
+                                    <th class="px-6 py-3 text-left">Requester</th>
+                                    <th class="px-6 py-3 text-left">Assignee</th>
+                                    <th class="px-6 py-3 text-left">SLA Status</th>
+                                    <th class="px-6 py-3 text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ticketTableBody" class="divide-y divide-slate-100">
+                                <!-- Tickets will be loaded here -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <div id="loadingState" class="p-12 text-center text-slate-500 hidden">
+                        <div
+                            class="animate-spin inline-block w-8 h-8 border-4 border-primary/20 border-t-primary rounded-full mb-4">
+                        </div>
+                        <p>Loading global queue...</p>
+                    </div>
+                </div>
+
+        </div>
+    </div>
+
+    <script src="js/app.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            if (!checkAuth()) return;
+            const user = getCurrentUser();
+            if (!user || user.role !== 'SERVICE_DESK') {
+                window.location.href = 'index.html';
+                return;
+            }
+
+            document.getElementById('userName').textContent = user.name;
+            await refreshData();
+        });
+
+        async function refreshData() {
+            await loadStats();
+            await loadQueue();
+        }
+
+        async function loadQueue() {
+            const tbody = document.getElementById('ticketTableBody');
+            const loader = document.getElementById('loadingState');
+
+            loader.classList.remove('hidden');
+            tbody.innerHTML = '';
+
+            try {
+                // For Service Desk, loadTickets() should fetch all tickets via /api/tickets/my 
+                // but the backend implementation for SD role in /my needs to be checked.
+                // Actually app.js loadTickets() uses /tickets/my for non-admins.
+                const tickets = await loadTickets();
+                renderTicketTable(tickets);
+            } catch (error) {
+                console.error('Error loading tickets:', error);
+                tbody.innerHTML = `<tr><td colspan="5" class="p-12 text-center text-red-500">Failed to load tickets</td></tr>`;
+            } finally {
+                loader.classList.add('hidden');
+            }
+        }
+
+        function renderTicketTable(tickets) {
+            const tbody = document.getElementById('ticketTableBody');
+            if (!tickets || tickets.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="p-12 text-center text-slate-400">No active tickets found</td></tr>`;
+                return;
+            }
+
+            tickets.forEach(ticket => {
+                let displayStatus = ticket.status;
+                if (ticket.slaBreached && ticket.status !== 'RESOLVED' && ticket.status !== 'CLOSED') {
+                    displayStatus = 'SLA_BREACHED';
+                }
+
+                const slaClass = displayStatus === 'SLA_BREACHED' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700';
+                const slaText = displayStatus === 'SLA_BREACHED' ? 'SLA BREACHED' : (ticket.slaDeadline ? formatDate(ticket.slaDeadline) : 'N/A');
+
+                const row = document.createElement('tr');
+                row.className = 'hover:bg-slate-50/50 transition-colors cursor-pointer';
+                row.onclick = () => window.location.href = `ticket-details.html?id=${ticket.id}`;
+
+                row.innerHTML = `
+                    <td class="px-6 py-4">
+                        <div class="flex flex-col">
+                            <span class="text-sm font-semibold text-slate-800">#${ticket.id}: ${escHtml(ticket.title)}</span>
+                            <span class="text-xs text-slate-500">${ticket.category} • ${ticket.priority}</span>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4">
+                        <div class="flex items-center">
+                            <div class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-xs font-bold mr-3">
+                                ${ticket.createdBy && ticket.createdBy.name ? ticket.createdBy.name.charAt(0) : '?'}
+                            </div>
+                            <span class="text-sm text-slate-700">${ticket.createdBy ? escHtml(ticket.createdBy.name) : 'Unknown'}</span>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4">
+                        <span class="text-sm text-slate-600">${ticket.assignedTo ? escHtml(ticket.assignedTo.name) : '<span class="italic text-slate-400">Unassigned</span>'}</span>
+                    </td>
+                    <td class="px-6 py-4">
+                        <span class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase ${slaClass}">
+                            ${slaText}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4">
+                        <div class="flex space-x-2" onclick="event.stopPropagation()">
+                            <button onclick="viewTicket(${ticket.id})" class="p-1.5 bg-indigo-50 text-indigo-600 rounded-lg hover:bg-indigo-100 transition-colors" title="View Details">
+                                <span class="material-icons text-sm">visibility</span>
+                            </button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function escHtml(str) {
+            if (!str) return '';
+            return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        }
+    </script>
+</body>
+
+</html>

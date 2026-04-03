@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Engineer Workspace - ITSM CORE</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "background-light": "#f6f7f8",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                },
+            },
+        }
+    </script>
+    <style>
+        body {
+            font-family: Inter, sans-serif;
+        }
+
+        .sidebar-link {
+            transition: all 0.2s;
+        }
+
+        .sidebar-link:hover {
+            background-color: rgba(19, 127, 236, 0.1);
+        }
+
+        .sidebar-link.active {
+            background-color: #137fec;
+            color: white;
+        }
+    </style>
+</head>
+
+<body class="bg-background-light min-h-screen font-display">
+
+    <!-- Main Container -->
+    <div class="flex h-screen overflow-hidden">
+
+        <!-- Sidebar -->
+        <aside class="w-52 bg-white border-r border-slate-200 flex flex-col">
+            <!-- Logo -->
+            <div class="p-6 border-b border-slate-200">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+                        <span class="material-icons text-white text-lg">dashboard</span>
+                    </div>
+                    <div>
+                        <h1 class="text-base font-bold text-primary">ITSM CORE</h1>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Navigation -->
+            <nav class="flex-1 p-3 space-y-1">
+                <a href="#"
+                    class="sidebar-link active flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium">
+                    <span class="material-icons text-lg">dashboard</span>
+                    <span>My Dashboard</span>
+                </a>
+                <a href="tickets-list.html"
+                    class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-600">
+                    <span class="material-icons text-lg">confirmation_number</span>
+                    <span>All Tickets</span>
+                </a>
+                <a href="#"
+                    class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-600">
+                    <span class="material-icons text-lg">menu_book</span>
+                    <span>Knowledge Base</span>
+                </a>
+                <a href="#"
+                    class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-600">
+                    <span class="material-icons text-lg">people</span>
+                    <span>Team Overview</span>
+                </a>
+                <a href="#"
+                    class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-600">
+                    <span class="material-icons text-lg">assessment</span>
+                    <span>Report Center</span>
+                </a>
+            </nav>
+
+            <!-- User Profile -->
+            <div class="p-4 border-t border-slate-200">
+                <div class="flex items-center gap-3">
+                    <div class="relative">
+                        <div
+                            class="w-10 h-10 bg-gradient-to-br from-primary to-blue-600 rounded-full flex items-center justify-center text-white font-semibold">
+                            A
+                        </div>
+                        <div class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full">
+                        </div>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <div class="text-sm font-medium text-slate-800 truncate">Alex Chen</div>
+                        <div class="text-xs text-green-600 flex items-center gap-1">
+                            <span class="w-1.5 h-1.5 bg-green-500 rounded-full"></span>
+                            Available
+                        </div>
+                    </div>
+                    <button class="p-1 hover:bg-slate-100 rounded">
+                        <span class="material-icons text-slate-400 text-lg">settings</span>
+                    </button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <div class="flex-1 flex flex-col overflow-hidden">
+
+            <!-- Header -->
+            <header class="bg-white border-b border-slate-200 px-8 py-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h2 class="text-2xl font-bold text-slate-800">Engineer Workspace</h2>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <div class="relative">
+                            <input type="text" placeholder="Search tickets..."
+                                class="w-80 pl-10 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary">
+                            <span
+                                class="material-icons absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-lg">search</span>
+                        </div>
+                        <button class="relative p-2 text-slate-600 hover:bg-slate-100 rounded-lg">
+                            <span class="material-icons">notifications</span>
+                            <span class="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+                        </button>
+
+                        <!-- Profile Dropdown -->
+                        <div class="relative group z-50">
+                            <button
+                                class="flex items-center gap-3 pl-4 border-l border-slate-200 hover:bg-slate-50 p-2 rounded-lg transition-colors">
+                                <div class="text-right">
+                                    <div id="userName" class="text-sm font-medium text-slate-800">Support Engineer</div>
+                                    <div class="text-xs text-slate-500">ENGINEERING TEAM</div>
+                                </div>
+                                <div
+                                    class="w-10 h-10 bg-gradient-to-br from-primary to-blue-600 rounded-full flex items-center justify-center text-white font-semibold">
+                                    S
+                                </div>
+                            </button>
+
+                            <!-- Dropdown Menu -->
+                            <div
+                                class="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-slate-100 overflow-hidden hidden group-hover:block">
+                                <div class="p-2">
+                                    <a href="#"
+                                        class="flex items-center gap-2 px-3 py-2 text-sm text-slate-600 hover:bg-slate-50 rounded-lg">
+                                        <span class="material-icons text-lg">person</span>
+                                        Profile
+                                    </a>
+                                    <a href="#"
+                                        class="flex items-center gap-2 px-3 py-2 text-sm text-slate-600 hover:bg-slate-50 rounded-lg">
+                                        <span class="material-icons text-lg">settings</span>
+                                        Settings
+                                    </a>
+                                    <div class="h-px bg-slate-100 my-1"></div>
+                                    <button onclick="logout()"
+                                        class="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg">
+                                        <span class="material-icons text-lg">logout</span>
+                                        Logout
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Content Area -->
+            <main class="flex-1 overflow-y-auto">
+                <div class="p-8">
+
+                    <!-- Statistics Cards -->
+                    <div class="grid grid-cols-4 gap-6 mb-8">
+                        <!-- My Pending Tasks -->
+                        <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-6 text-white">
+                            <div class="flex items-start justify-between mb-4">
+                                <div class="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
+                                    <span class="material-icons text-2xl">assignment</span>
+                                </div>
+                            </div>
+                            <div class="mb-2">
+                                <div class="text-sm text-blue-100 mb-1">My Pending Tasks</div>
+                                <div class="text-4xl font-bold">12</div>
+                            </div>
+                            <div class="flex items-center gap-1 text-xs text-blue-100">
+                                <span class="material-icons text-sm">trending_up</span>
+                                <span>4 new since 8:00 AM</span>
+                            </div>
+                        </div>
+
+                        <!-- Resolved Today -->
+                        <div class="bg-white rounded-xl border border-slate-200 p-6">
+                            <div class="flex items-start justify-between mb-4">
+                                <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                                    <span class="material-icons text-green-600 text-2xl">check_circle</span>
+                                </div>
+                            </div>
+                            <div class="mb-2">
+                                <div class="text-sm text-slate-600 mb-1">Resolved Today</div>
+                                <div class="text-4xl font-bold text-slate-900">08</div>
+                            </div>
+                            <div class="flex items-center gap-1 text-xs text-green-600">
+                                <span class="material-icons text-sm">trending_up</span>
+                                <span>80% of daily goal (10)</span>
+                            </div>
+                        </div>
+
+                        <!-- Avg. First Response -->
+                        <div class="bg-white rounded-xl border border-slate-200 p-6">
+                            <div class="flex items-start justify-between mb-4">
+                                <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                                    <span class="material-icons text-blue-600 text-2xl">schedule</span>
+                                </div>
+                            </div>
+                            <div class="mb-2">
+                                <div class="text-sm text-slate-600 mb-1">Avg. First Response</div>
+                                <div class="text-4xl font-bold text-slate-900">18m</div>
+                            </div>
+                            <div class="flex items-center gap-1 text-xs text-blue-600">
+                                <span class="material-icons text-sm">trending_down</span>
+                                <span>5m faster than average</span>
+                            </div>
+                        </div>
+
+                        <!-- CSAT Score -->
+                        <div class="bg-white rounded-xl border border-slate-200 p-6">
+                            <div class="flex items-start justify-between mb-4">
+                                <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
+                                    <span class="material-icons text-yellow-600 text-2xl">star</span>
+                                </div>
+                            </div>
+                            <div class="mb-2">
+                                <div class="text-sm text-slate-600 mb-1">CSAT Score</div>
+                                <div class="text-4xl font-bold text-slate-900">4.9</div>
+                            </div>
+                            <div class="flex items-center gap-1 text-xs text-yellow-600">
+                                <span class="material-icons text-sm">star</span>
+                                <span>Based on 24 reviews</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Main Grid -->
+                    <div class="grid grid-cols-3 gap-6">
+
+                        <!-- My Active Queue (2 columns) -->
+                        <div class="col-span-2 bg-white rounded-xl border border-slate-200 overflow-hidden">
+                            <div class="p-6 border-b border-slate-200 flex items-center justify-between">
+                                <div>
+                                    <h3 class="text-lg font-semibold text-slate-800">My Active Queue</h3>
+                                    <p class="text-sm text-slate-500">12 Open</p>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <button
+                                        class="px-3 py-1.5 text-sm border border-slate-200 rounded-lg hover:bg-slate-50 flex items-center gap-1">
+                                        <span class="material-icons text-sm">filter_list</span>
+                                        Filter
+                                    </button>
+                                    <button
+                                        class="px-3 py-1.5 text-sm border border-slate-200 rounded-lg hover:bg-slate-50 flex items-center gap-1">
+                                        <span class="material-icons text-sm">sort</span>
+                                        SLA Deadline
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="overflow-x-auto">
+                                <table class="w-full">
+                                    <thead class="bg-slate-50 border-b border-slate-200">
+                                        <tr class="text-xs font-semibold text-slate-600 uppercase tracking-wide">
+                                            <th class="px-6 py-3 text-left">Ticket ID</th>
+                                            <th class="px-6 py-3 text-left">Subject & User</th>
+                                            <th class="px-6 py-3 text-left">Priority</th>
+                                            <th class="px-6 py-3 text-left">SLA Countdown</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-slate-100">
+                                        <tr class="hover:bg-slate-50 cursor-pointer"
+                                            onclick="window.location.href='ticket-details.html?id=4829'">
+                                            <td class="px-6 py-4">
+                                                <div class="font-medium text-primary">#INC-4829</div>
+                                            </td>
+                                            <td class="px-6 py-4">
+                                                <div class="font-medium text-slate-900">VPN Access Denied - Main Campus
+                                                </div>
+                                                <div class="text-sm text-slate-500">Raised by Prof. Sarah Miller</div>
+                                            </td>
+                                            <td class="px-6 py-4">
+                                                <span
+                                                    class="px-3 py-1 bg-red-100 text-red-700 rounded-full text-xs font-medium uppercase">Critical</span>
+                                            </td>
+                                            <td class="px-6 py-4">
+                                                <div class="flex items-center gap-2">
+                                                    <span class="material-icons text-red-600 text-sm">schedule</span>
+                                                    <div>
+                                                        <div class="text-sm font-medium text-red-600">00h 18m 42s</div>
+                                                        <div class="text-xs text-slate-500">Overdue</div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr class="hover:bg-slate-50 cursor-pointer"
+                                            onclick="window.location.href='ticket-details.html?id=3102'">
+                                            <td class="px-6 py-4">
+                                                <div class="font-medium text-primary">#REQ-3102</div>
+                                            </td>
+                                            <td class="px-6 py-4">
+                                                <div class="font-medium text-slate-900">Lab Workstation Software Install
+                                                </div>
+                                                <div class="text-sm text-slate-500">Raised by Student IT Lab</div>
+                                            </td>
+                                            <td class="px-6 py-4">
+                                                <span
+                                                    class="px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-xs font-medium uppercase">High</span>
+                                            </td>
+                                            <td class="px-6 py-4">
+                                                <div class="flex items-center gap-2">
+                                                    <span class="material-icons text-orange-600 text-sm">schedule</span>
+                                                    <div>
+                                                        <div class="text-sm font-medium text-orange-600">01h 45m 12s
+                                                        </div>
+                                                        <div class="text-xs text-slate-500">Due soon</div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr class="hover:bg-slate-50 cursor-pointer"
+                                            onclick="window.location.href='ticket-details.html?id=4835'">
+                                            <td class="px-6 py-4">
+                                                <div class="font-medium text-primary">#INC-4835</div>
+                                            </td>
+                                            <td class="px-6 py-4">
+                                                <div class="font-medium text-slate-900">Printer Jam - Library 2nd Floor
+                                                </div>
+                                                <div class="text-sm text-slate-500">Raised by Mark Stevens</div>
+                                            </td>
+                                            <td class="px-6 py-4">
+                                                <span
+                                                    class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium uppercase">Medium</span>
+                                            </td>
+                                            <td class="px-6 py-4">
+                                                <div class="flex items-center gap-2">
+                                                    <span class="material-icons text-green-600 text-sm">schedule</span>
+                                                    <div>
+                                                        <div class="text-sm font-medium text-green-600">04h 22m 10s
+                                                        </div>
+                                                        <div class="text-xs text-slate-500">On track</div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr class="hover:bg-slate-50 cursor-pointer"
+                                            onclick="window.location.href='ticket-details.html?id=4830'">
+                                            <td class="px-6 py-4">
+                                                <div class="font-medium text-primary">#INC-4830</div>
+                                            </td>
+                                            <td class="px-6 py-4">
+                                                <div class="font-medium text-slate-900">Email Syncing Issue - Office 365
+                                                </div>
+                                                <div class="text-sm text-slate-500">Raised by Registrar Office</div>
+                                            </td>
+                                            <td class="px-6 py-4">
+                                                <span
+                                                    class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium uppercase">Low</span>
+                                            </td>
+                                            <td class="px-6 py-4">
+                                                <div class="flex items-center gap-2">
+                                                    <span class="material-icons text-green-600 text-sm">schedule</span>
+                                                    <div>
+                                                        <div class="text-sm font-medium text-green-600">12h 05m 55s
+                                                        </div>
+                                                        <div class="text-xs text-slate-500">Well ahead</div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr class="hover:bg-slate-50 cursor-pointer"
+                                            onclick="window.location.href='ticket-details.html?id=4841'">
+                                            <td class="px-6 py-4">
+                                                <div class="font-medium text-primary">#INC-4841</div>
+                                            </td>
+                                            <td class="px-6 py-4">
+                                                <div class="font-medium text-slate-900">CMS Database Timeout Error</div>
+                                                <div class="text-sm text-slate-500">Raised by Admin Panel</div>
+                                            </td>
+                                            <td class="px-6 py-4">
+                                                <span
+                                                    class="px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-xs font-medium uppercase">High</span>
+                                            </td>
+                                            <td class="px-6 py-4">
+                                                <div class="flex items-center gap-2">
+                                                    <span class="material-icons text-orange-600 text-sm">schedule</span>
+                                                    <div>
+                                                        <div class="text-sm font-medium text-orange-600">02h 10m 18s
+                                                        </div>
+                                                        <div class="text-xs text-slate-500">Due soon</div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <div class="p-4 border-t border-slate-200 flex items-center justify-between">
+                                <div class="text-sm text-slate-600">
+                                    Showing <span class="font-medium">5</span> of <span class="font-medium">12</span>
+                                    tickets
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <button
+                                        class="px-3 py-1.5 border border-slate-200 rounded-lg hover:bg-slate-50 text-sm">←
+                                        Previous</button>
+                                    <button class="w-8 h-8 rounded bg-primary text-white text-sm font-medium">1</button>
+                                    <button class="w-8 h-8 rounded hover:bg-slate-100 text-sm font-medium">2</button>
+                                    <button class="w-8 h-8 rounded hover:bg-slate-100 text-sm font-medium">3</button>
+                                    <button
+                                        class="px-3 py-1.5 border border-slate-200 rounded-lg hover:bg-slate-50 text-sm">Next
+                                        →</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Suggested Articles -->
+                        <div class="bg-white rounded-xl border border-slate-200 p-6">
+                            <div class="flex items-center justify-between mb-6">
+                                <h3 class="text-lg font-semibold text-slate-800">Suggested Articles</h3>
+                            </div>
+
+                            <div class="space-y-4">
+                                <!-- Article -->
+                                <div class="pb-4 border-b border-slate-100">
+                                    <h4 class="font-medium text-slate-900 mb-2">Resetting Eduroam Credentials</h4>
+                                    <p class="text-sm text-slate-600 mb-3">Guide for faculty & students WiFi access...
+                                    </p>
+                                    <div class="flex items-center gap-3 text-xs text-slate-500">
+                                        <div class="flex items-center gap-1">
+                                            <span class="material-icons text-xs">visibility</span>
+                                            <span>1.2k views</span>
+                                        </div>
+                                        <div class="flex items-center gap-1">
+                                            <span class="material-icons text-xs">schedule</span>
+                                            <span>2 days ago</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Article -->
+                                <div class="pb-4 border-b border-slate-100">
+                                    <h4 class="font-medium text-slate-900 mb-2">VPN Troubleshooting (Mac/Win)</h4>
+                                    <p class="text-sm text-slate-600 mb-3">Common issues with Duo 2FA integration...</p>
+                                    <div class="flex items-center gap-3 text-xs text-slate-500">
+                                        <div class="flex items-center gap-1">
+                                            <span class="material-icons text-xs">visibility</span>
+                                            <span>850 views</span>
+                                        </div>
+                                        <div class="flex items-center gap-1">
+                                            <span class="material-icons text-xs">schedule</span>
+                                            <span>1 week ago</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Article -->
+                                <div class="pb-4 border-b border-slate-100">
+                                    <h4 class="font-medium text-slate-900 mb-2">Printer Maintenance Schedule</h4>
+                                    <p class="text-sm text-slate-600 mb-3">Campus-wide printer status dashboard...</p>
+                                    <div class="flex items-center gap-3 text-xs text-slate-500">
+                                        <div class="flex items-center gap-1">
+                                            <span class="material-icons text-xs">visibility</span>
+                                            <span>430 views</span>
+                                        </div>
+                                        <div class="flex items-center gap-1">
+                                            <span class="material-icons text-xs">schedule</span>
+                                            <span>3 weeks ago</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button
+                                class="w-full mt-4 px-4 py-2 text-sm text-primary hover:bg-blue-50 rounded-lg font-medium flex items-center justify-center gap-1">
+                                <span class="material-icons text-sm">description</span>
+                                View All Documentation
+                            </button>
+                        </div>
+
+                    </div>
+
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script src="js/app.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            checkAuth();
+            loadUserInfo();
+        });
+    </script>
+</body>
+
+</html>
