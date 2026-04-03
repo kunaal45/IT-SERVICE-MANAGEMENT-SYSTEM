@@ -80,8 +80,8 @@ public class WorkflowValidator {
                 }
             }
             case "CLOSE_TICKET" -> {
-                if (userRole != Role.FACULTY && userRole != Role.ADMIN) {
-                    throw new UnauthorizedException("Only FACULTY or ADMIN can close tickets");
+                if (userRole != Role.FACULTY && userRole != Role.ADMIN && userRole != Role.SERVICE_DESK) {
+                    throw new UnauthorizedException("Only FACULTY, ADMIN or SERVICE_DESK can close tickets");
                 }
             }
             case "VIEW_ALL_TICKETS" -> {

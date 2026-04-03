@@ -3,6 +3,7 @@ package com.itsm.itsmsystem.exception;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -28,11 +29,22 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleUnauthorized(
             UnauthorizedException ex, WebRequest request) {
         ErrorResponse error = new ErrorResponse(
-                HttpStatus.UNAUTHORIZED.value(),
+                HttpStatus.FORBIDDEN.value(),
                 ex.getMessage(),
-                "Unauthorized access");
+                "Access denied");
         error.setPath(request.getDescription(false).replace("uri=", ""));
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(error);
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ErrorResponse> handleAccessDenied(
+            AccessDeniedException ex, WebRequest request) {
+        ErrorResponse error = new ErrorResponse(
+                HttpStatus.FORBIDDEN.value(),
+                "You do not have permission to perform this action",
+                "Access denied");
+        error.setPath(request.getDescription(false).replace("uri=", ""));
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(error);
     }
 
     @ExceptionHandler(InvalidTicketStateException.class)

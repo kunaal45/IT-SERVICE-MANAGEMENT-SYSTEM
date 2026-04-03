@@ -747,8 +747,8 @@
                 resolveBtn.classList.remove('hidden');
             }
 
-            // ── FACULTY / ADMIN: Close (when RESOLVED) ──
-            if ((role === 'FACULTY' || role === 'ADMIN') && status === 'RESOLVED') {
+            // ── FACULTY / ADMIN / SERVICE_DESK: Close (when RESOLVED) ──
+            if ((role === 'FACULTY' || role === 'ADMIN' || role === 'SERVICE_DESK') && status === 'RESOLVED') {
                 closeBtn.classList.remove('hidden');
             }
 

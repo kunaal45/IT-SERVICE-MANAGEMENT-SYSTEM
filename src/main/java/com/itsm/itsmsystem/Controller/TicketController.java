@@ -162,7 +162,7 @@ public class TicketController {
     }
 
     @PutMapping("/{id}/close")
-    @PreAuthorize("hasAnyRole('FACULTY', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('FACULTY', 'ADMIN', 'SERVICE_DESK')")
     public ResponseEntity<ApiResponse<Ticket>> closeTicket(
             @PathVariable Long id,
             @RequestHeader("Authorization") String authHeader) {
