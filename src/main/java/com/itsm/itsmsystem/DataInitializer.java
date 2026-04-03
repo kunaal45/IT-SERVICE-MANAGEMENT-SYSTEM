@@ -57,6 +57,9 @@ public class DataInitializer implements CommandLineRunner {
     @Transactional
     private void cleanupLegacyUsers() {
         String[] legacyEmails = {
+                // Old system users (replaced by system.admin@itsm.com, service.desk.agent@itsm.com)
+                "admin@itsm.com", "desk@itsm.com",
+                // Other old legacy users
                 "hardware@itsm.com", "network@itsm.com", "software@itsm.com",
                 "infra@itsm.com", "facilities@itsm.com", "faculty@itsm.com", "prof@itsm.com"
         };
