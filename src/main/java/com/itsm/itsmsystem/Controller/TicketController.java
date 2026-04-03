@@ -104,7 +104,7 @@ public class TicketController {
     }
 
     @PutMapping("/{id}/reassign")
-    @PreAuthorize("hasRole('SERVICE_DESK')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SERVICE_DESK')")
     public ResponseEntity<ApiResponse<Ticket>> reassignTicket(
             @PathVariable Long id,
             @RequestBody Map<String, Long> body,
@@ -147,7 +147,7 @@ public class TicketController {
     }
 
     @PutMapping("/{id}/resolve")
-    @PreAuthorize("hasAnyRole('ENGINEER', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('ENGINEER', 'ADMIN', 'SERVICE_DESK')")
     public ResponseEntity<ApiResponse<Ticket>> resolveTicket(
             @PathVariable Long id,
             @RequestHeader("Authorization") String authHeader,

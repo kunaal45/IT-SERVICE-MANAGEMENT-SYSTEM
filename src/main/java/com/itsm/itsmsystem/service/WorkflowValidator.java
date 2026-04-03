@@ -66,7 +66,7 @@ public class WorkflowValidator {
             }
             case "ASSIGN_TICKET", "REASSIGN_TICKET" -> {
                 if (userRole != Role.ADMIN && userRole != Role.SERVICE_DESK) {
-                    throw new UnauthorizedException("Only ADMIN or SERVICE_DESK can assign tickets");
+                    throw new UnauthorizedException("Only ADMIN or SERVICE_DESK can assign/reassign tickets");
                 }
             }
             case "START_PROGRESS" -> {
