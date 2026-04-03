@@ -368,29 +368,32 @@
             populateComments(comments);
             setupActionButtons(ticket);
 
-            // Load reassign UI for Admin/SD - Synchronized Visibility
+            // Management Actions: STRICTLY ADMIN and SERVICE_DESK only
             const user = getCurrentUser();
             const agentActionsCard = document.getElementById('agentActionsCard');
             if (user && (user.role === 'ADMIN' || user.role === 'SERVICE_DESK')) {
-                // Rule: If ticket is closed, don't show any reassignment or escalation
+                // Hide if ticket is fully closed
                 if (ticket.status === 'CLOSED') {
                     agentActionsCard.classList.add('hidden');
                 } else {
                     agentActionsCard.classList.remove('hidden');
-                    
-                    // Specific visibility for Reassign based on status or SLA breach
+
+                    // Reassign button: only when not RESOLVED (or SLA breached)
                     const reassignBtn = document.getElementById('reassignBtn');
                     if (reassignBtn) {
                         const canReassign = (ticket.status !== 'RESOLVED') || ticket.slaBreached;
                         reassignBtn.classList.toggle('hidden', !canReassign);
                     }
 
+                    // Escalate: SERVICE_DESK only
                     if (user.role === 'SERVICE_DESK') {
                         document.getElementById('escalateBtn').classList.remove('hidden');
                     }
+
                     loadReassignEngineers();
                 }
             } else {
+                // ENGINEER, FACULTY, STUDENT — no management actions
                 agentActionsCard.classList.add('hidden');
             }
         }
@@ -722,32 +725,34 @@
             resolveBtn.classList.add('hidden');
             closeBtn.classList.add('hidden');
 
-            // If ticket is CLOSED, we show NO actions
+            // If ticket is CLOSED, show NO actions
             if (status === 'CLOSED') return;
 
-            // Start Progress: Engineer only, when ASSIGNED and ticket is theirs
-            if ((role === 'ENGINEER' || role === 'SUPPORT_ENGINEER') && status === 'ASSIGNED') {
+            // ── ENGINEER: Start Progress (their assigned ticket, when ASSIGNED) ──
+            if (role === 'ENGINEER' && status === 'ASSIGNED') {
                 if (!ticket.assignedTo || ticket.assignedTo.id == user.id) {
                     startBtn.classList.remove('hidden');
                 }
             }
 
-            // Resolve: Engineer (own ticket, IN_PROGRESS) or Admin
-            if (status === 'IN_PROGRESS') {
-                if (role === 'ADMIN') {
-                    resolveBtn.classList.remove('hidden');
-                } else if ((role === 'ENGINEER' || role === 'SUPPORT_ENGINEER') &&
-                    ticket.assignedTo && ticket.assignedTo.id == user.id) {
+            // ── ENGINEER: Resolve (their assigned ticket, when IN_PROGRESS) ──
+            if (role === 'ENGINEER' && status === 'IN_PROGRESS') {
+                if (ticket.assignedTo && ticket.assignedTo.id == user.id) {
                     resolveBtn.classList.remove('hidden');
                 }
             }
 
-            // Close: Faculty only or Admin, when ticket is theirs (or admin override) and RESOLVED
+            // ── ADMIN / SERVICE_DESK: Resolve (any ticket in IN_PROGRESS) ──
+            if ((role === 'ADMIN' || role === 'SERVICE_DESK') && status === 'IN_PROGRESS') {
+                resolveBtn.classList.remove('hidden');
+            }
+
+            // ── FACULTY / ADMIN: Close (when RESOLVED) ──
             if ((role === 'FACULTY' || role === 'ADMIN') && status === 'RESOLVED') {
                 closeBtn.classList.remove('hidden');
             }
 
-            // Show comment box for faculty only, unless closed
+            // ── FACULTY: Comment box (not closed) ──
             if (role === 'FACULTY' && status !== 'CLOSED') {
                 document.getElementById('addCommentSection').classList.remove('hidden');
             } else {
