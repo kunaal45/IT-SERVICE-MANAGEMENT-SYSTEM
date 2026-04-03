@@ -5,6 +5,8 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Admin Command Center - ITSM</title>
+    <meta name="description"
+        content="ITSM Admin Command Center – system oversight, ticket triage and real-time monitoring." />
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
         rel="stylesheet" />
@@ -18,9 +20,7 @@
                         "primary": "#137fec",
                         "background-light": "#f6f7f8",
                     },
-                    fontFamily: {
-                        "display": ["Inter", "sans-serif"]
-                    },
+                    fontFamily: { "display": ["Inter", "sans-serif"] },
                 },
             },
         }
@@ -42,17 +42,120 @@
             background-color: #137fec;
             color: white;
         }
+
+        #assignModal, #raiseModal {
+            display: none;
+        }
+
+        #assignModal.open, #raiseModal.open {
+            display: flex;
+        }
     </style>
 </head>
 
 <body class="bg-background-light min-h-screen font-display">
+
+    <!-- Assign Ticket Modal -->
+    <div id="assignModal" class="fixed inset-0 bg-black/50 z-50 items-center justify-center">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-xl font-bold text-slate-800">Assign Ticket</h3>
+                <button onclick="closeAssignModal()" class="p-2 hover:bg-slate-100 rounded-lg">
+                    <span class="material-icons text-slate-500">close</span>
+                </button>
+            </div>
+            <p class="text-sm text-slate-600 mb-1">Ticket: <span id="assignTicketTitle"
+                    class="font-medium text-slate-800"></span></p>
+            <p class="text-xs text-slate-400 mb-6">ID: <span id="assignTicketId"></span></p>
+            <label class="block text-sm font-semibold text-slate-700 mb-2">Select Engineer</label>
+            <select id="engineerSelect"
+                class="w-full px-4 py-2.5 border border-slate-200 rounded-lg text-sm mb-6 focus:ring-2 focus:ring-primary/20 focus:border-primary">
+                <option value="">Loading engineers…</option>
+            </select>
+            <div class="flex gap-3">
+                <button onclick="closeAssignModal()"
+                    class="flex-1 px-4 py-2.5 border border-slate-200 rounded-lg text-sm font-medium hover:bg-slate-50">Cancel</button>
+                <button onclick="confirmAssign()"
+                    class="flex-1 px-4 py-2.5 bg-primary text-white rounded-lg text-sm font-medium hover:bg-blue-600">Assign
+                    Ticket</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Raise Ticket Modal -->
+    <div id="raiseModal" class="fixed inset-0 bg-black/50 z-50 items-center justify-center">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg p-8 max-h-[90vh] overflow-y-auto">
+            <div class="flex items-center justify-between mb-6">
+                <div>
+                    <h3 class="text-xl font-bold text-slate-800">Raise an Issue</h3>
+                    <p class="text-xs text-slate-500">Submit a new support request</p>
+                </div>
+                <button onclick="closeRaiseModal()" class="p-2 hover:bg-slate-100 rounded-lg">
+                    <span class="material-icons text-slate-500">close</span>
+                </button>
+            </div>
+            
+            <form id="raiseForm" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-1">Issue Title *</label>
+                    <input type="text" id="raiseTitle" required placeholder="Brief summary"
+                        class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm">
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-1">Category *</label>
+                        <select id="raiseCategory" required class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm">
+                            <option value="">Select Category</option>
+                            <option value="HARDWARE">Hardware</option>
+                            <option value="SOFTWARE">Software</option>
+                            <option value="NETWORK">Network</option>
+                            <option value="PORTAL_WEBSITE">Portal/Website</option>
+                            <option value="INFRASTRUCTURE">Infrastructure</option>
+                            <option value="ATTENDANCE_SYSTEM">Attendance System</option>
+                            <option value="RESOURCE_REQUEST">Resource Request</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-1">Priority</label>
+                        <select id="raisePriority" required class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm">
+                            <option value="LOW">Low</option>
+                            <option value="MEDIUM" selected>Medium</option>
+                            <option value="HIGH">High</option>
+                            <option value="CRITICAL">Critical</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-1">Location</label>
+                    <input type="text" id="raiseLocation" placeholder="Area/Room"
+                        class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-1">Description *</label>
+                    <textarea id="raiseDescription" required rows="3" placeholder="Describe issue details"
+                        class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm resize-none"></textarea>
+                </div>
+
+                <div class="flex gap-3 pt-4 border-t border-slate-100">
+                    <button type="button" onclick="closeRaiseModal()"
+                        class="flex-1 px-4 py-2 border border-slate-200 rounded-lg text-sm font-medium hover:bg-slate-50">Cancel</button>
+                    <button type="submit" id="raiseSubmitBtn"
+                        class="flex-1 px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-blue-600 flex items-center justify-center gap-2">
+                        <span class="material-icons text-sm">send</span> Submit Target
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
 
     <!-- Main Container -->
     <div class="flex h-screen overflow-hidden">
 
         <!-- Sidebar -->
         <aside class="w-64 bg-white border-r border-slate-200 flex flex-col">
-            <!-- Logo -->
             <div class="p-6 border-b border-slate-200">
                 <div class="flex items-center gap-3">
                     <div class="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
@@ -60,17 +163,21 @@
                     </div>
                     <div>
                         <h1 class="text-lg font-bold text-slate-800">ITSM</h1>
-                        <p class="text-xs text-slate-500">CMD</p>
+                        <p class="text-xs text-slate-500">Admin Portal</p>
                     </div>
                 </div>
             </div>
 
-            <!-- Navigation -->
             <nav class="flex-1 p-4 space-y-2">
                 <a href="admin-dashboard.html"
                     class="sidebar-link active flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium">
                     <span class="material-icons text-xl">dashboard</span>
                     <span>Command Center</span>
+                </a>
+                <a href="audit_logs.html"
+                    class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50">
+                    <span class="material-icons text-xl">shield</span>
+                    <span>Audit Logs</span>
                 </a>
                 <a href="settings.html"
                     class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50">
@@ -79,7 +186,6 @@
                 </a>
             </nav>
 
-            <!-- Settings & Logout -->
             <div class="p-4 border-t border-slate-200 space-y-2">
                 <button onclick="logout()"
                     class="w-full sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50">
@@ -101,49 +207,41 @@
                     </div>
                     <div class="flex items-center gap-4">
                         <div class="relative">
-                            <input type="text" placeholder="Search tickets, assets, or users..."
-                                class="w-96 pl-10 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary">
+                            <input type="text" id="searchInput" placeholder="Search tickets…"
+                                class="w-72 pl-10 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                                oninput="filterTicketTable(this.value)">
                             <span
                                 class="material-icons absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xl">search</span>
                         </div>
-                        <button class="relative p-2 text-slate-600 hover:bg-slate-100 rounded-lg">
-                            <span class="material-icons">notifications</span>
-                            <span class="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
-                        </button>
 
                         <!-- Profile Dropdown -->
-                        <div class="relative group z-50">
-                            <button onclick="toggleProfileMenu()" onblur="setTimeout(() => closeProfileMenu(), 200)"
+                        <div class="relative z-50">
+                            <button id="profileBtn" onclick="toggleProfileMenu()"
                                 class="flex items-center gap-3 pl-4 border-l border-slate-200 hover:bg-slate-50 p-2 rounded-lg transition-colors">
                                 <div class="text-right">
                                     <div id="userName" class="text-sm font-medium text-slate-800">Admin User</div>
                                     <div class="text-xs text-slate-500">SYSTEM OVERSEER</div>
                                 </div>
                                 <div
-                                    class="w-10 h-10 bg-gradient-to-br from-primary to-blue-600 rounded-full flex items-center justify-center text-white font-semibold">
-                                    A
-                                </div>
+                                    class="w-10 h-10 bg-gradient-to-br from-primary to-blue-600 rounded-full flex items-center justify-center text-white font-semibold user-avatar-initial">
+                                    A</div>
                             </button>
 
-                            <!-- Dropdown Menu -->
                             <div id="profileMenu"
-                                class="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-slate-100 overflow-hidden hidden transition-all duration-200 origin-top-right">
+                                class="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-slate-100 overflow-hidden hidden">
                                 <div class="p-2">
                                     <a href="#"
                                         class="flex items-center gap-2 px-3 py-2 text-sm text-slate-600 hover:bg-slate-50 rounded-lg">
-                                        <span class="material-icons text-lg">person</span>
-                                        Profile
+                                        <span class="material-icons text-lg">person</span> Profile
                                     </a>
                                     <a href="settings.html"
                                         class="flex items-center gap-2 px-3 py-2 text-sm text-slate-600 hover:bg-slate-50 rounded-lg">
-                                        <span class="material-icons text-lg">settings</span>
-                                        Settings
+                                        <span class="material-icons text-lg">settings</span> Settings
                                     </a>
                                     <div class="h-px bg-slate-100 my-1"></div>
                                     <button onclick="logout()"
                                         class="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg">
-                                        <span class="material-icons text-lg">logout</span>
-                                        Logout
+                                        <span class="material-icons text-lg">logout</span> Logout
                                     </button>
                                 </div>
                             </div>
@@ -157,7 +255,6 @@
 
                 <!-- Statistics Cards -->
                 <div class="grid grid-cols-4 gap-6 mb-8">
-                    <!-- SLA Breaches -->
                     <div class="bg-white rounded-xl border border-slate-200 p-6">
                         <div class="flex items-start justify-between mb-4">
                             <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
@@ -165,17 +262,10 @@
                             </div>
                             <span class="text-xs font-semibold text-red-600 uppercase tracking-wide">High Urgency</span>
                         </div>
-                        <div class="mb-1">
-                            <div class="text-sm text-slate-600 mb-1">SLA Breaches</div>
-                            <div id="breachedTickets" class="text-3xl font-bold text-slate-900">12</div>
-                        </div>
-                        <div class="flex items-center gap-1 text-xs text-red-600">
-                            <span class="material-icons text-sm">trending_up</span>
-                            <span>+2 from last hour</span>
-                        </div>
+                        <div class="text-sm text-slate-600 mb-1">SLA Breached</div>
+                        <div id="breachedTickets" class="text-3xl font-bold text-slate-900">0</div>
                     </div>
 
-                    <!-- Unassigned -->
                     <div class="bg-white rounded-xl border border-slate-200 p-6">
                         <div class="flex items-start justify-between mb-4">
                             <div class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
@@ -184,17 +274,10 @@
                             <span class="text-xs font-semibold text-orange-600 uppercase tracking-wide">Pending
                                 Action</span>
                         </div>
-                        <div class="mb-1">
-                            <div class="text-sm text-slate-600 mb-1">Unassigned</div>
-                            <div id="unassignedTickets" class="text-3xl font-bold text-slate-900">28</div>
-                        </div>
-                        <div class="flex items-center gap-1 text-xs text-orange-600">
-                            <span class="material-icons text-sm">schedule</span>
-                            <span>Needs triage immediately</span>
-                        </div>
+                        <div class="text-sm text-slate-600 mb-1">Awaiting Assignment</div>
+                        <div id="unassignedTickets" class="text-3xl font-bold text-slate-900">0</div>
                     </div>
 
-                    <!-- Total Active -->
                     <div class="bg-white rounded-xl border border-slate-200 p-6">
                         <div class="flex items-start justify-between mb-4">
                             <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
@@ -202,17 +285,10 @@
                             </div>
                             <span class="text-xs font-semibold text-blue-600 uppercase tracking-wide">In Progress</span>
                         </div>
-                        <div class="mb-1">
-                            <div class="text-sm text-slate-600 mb-1">Total Active</div>
-                            <div id="totalTickets" class="text-3xl font-bold text-slate-900">142</div>
-                        </div>
-                        <div class="flex items-center gap-1 text-xs text-blue-600">
-                            <span class="material-icons text-sm">update</span>
-                            <span>Updated 2 mins ago</span>
-                        </div>
+                        <div class="text-sm text-slate-600 mb-1">Active Tickets</div>
+                        <div id="inProgressTickets" class="text-3xl font-bold text-slate-900">0</div>
                     </div>
 
-                    <!-- Resolved Today -->
                     <div class="bg-white rounded-xl border border-slate-200 p-6">
                         <div class="flex items-start justify-between mb-4">
                             <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
@@ -220,14 +296,8 @@
                             </div>
                             <span class="text-xs font-semibold text-green-600 uppercase tracking-wide">Completed</span>
                         </div>
-                        <div class="mb-1">
-                            <div class="text-sm text-slate-600 mb-1">Resolved Today</div>
-                            <div id="resolvedTickets" class="text-3xl font-bold text-slate-900">84</div>
-                        </div>
-                        <div class="flex items-center gap-1 text-xs text-green-600">
-                            <span class="material-icons text-sm">trending_up</span>
-                            <span>12% above average</span>
-                        </div>
+                        <div class="text-sm text-slate-600 mb-1">Resolved / Closed</div>
+                        <div id="resolvedTickets" class="text-3xl font-bold text-slate-900">0</div>
                     </div>
                 </div>
 
@@ -238,19 +308,17 @@
                     <div class="col-span-2 bg-white rounded-xl border border-slate-200 overflow-hidden">
                         <div class="p-6 border-b border-slate-200 flex items-center justify-between">
                             <div>
-                                <h3 class="text-lg font-semibold text-slate-800">Global Ticket Queue</h3>
-                                <p class="text-sm text-slate-500">Showing 10 of 142</p>
+                                <h3 class="text-lg font-semibold text-slate-800">Global Ticket Monitor</h3>
+                                <p id="queueSubtitle" class="text-sm text-slate-500">Triage handled by Service Desk</p>
                             </div>
-                            <div class="flex items-center gap-2">
-                                <button
-                                    class="px-3 py-1.5 text-sm border border-slate-200 rounded-lg hover:bg-slate-50 flex items-center gap-1">
-                                    <span class="material-icons text-sm">filter_list</span>
-                                    Filter
+                            <div class="flex items-center gap-3">
+                                <button onclick="openRaiseModal()"
+                                    class="px-3 py-1.5 text-sm bg-primary text-white rounded-lg hover:bg-blue-600 flex items-center gap-1 font-medium shadow-sm">
+                                    <span class="material-icons text-sm">add</span> Raise Ticket
                                 </button>
-                                <button
+                                <button onclick="refreshAll()"
                                     class="px-3 py-1.5 text-sm border border-slate-200 rounded-lg hover:bg-slate-50 flex items-center gap-1">
-                                    <span class="material-icons text-sm">sort</span>
-                                    Sort
+                                    <span class="material-icons text-sm">refresh</span> Refresh
                                 </button>
                             </div>
                         </div>
@@ -260,7 +328,7 @@
                                 <thead class="bg-slate-50 border-b border-slate-200">
                                     <tr class="text-xs font-semibold text-slate-600 uppercase tracking-wide">
                                         <th class="px-6 py-3 text-left">ID</th>
-                                        <th class="px-6 py-3 text-left">Ticket Description</th>
+                                        <th class="px-6 py-3 text-left">Ticket</th>
                                         <th class="px-6 py-3 text-left">Priority</th>
                                         <th class="px-6 py-3 text-left">Status</th>
                                         <th class="px-6 py-3 text-left">Assigned To</th>
@@ -268,21 +336,12 @@
                                     </tr>
                                 </thead>
                                 <tbody id="allTicketsList" class="divide-y divide-slate-100">
-                                    <!-- Populated by JavaScript -->
+                                    <tr>
+                                        <td colspan="6" class="px-6 py-8 text-center text-slate-400">Loading tickets…
+                                        </td>
+                                    </tr>
                                 </tbody>
                             </table>
-                        </div>
-
-                        <div class="p-4 border-t border-slate-200 flex items-center justify-between">
-                            <button class="px-3 py-1.5 text-sm text-slate-600 hover:text-slate-800">← Previous</button>
-                            <div class="flex items-center gap-1">
-                                <button class="w-8 h-8 rounded bg-primary text-white text-sm font-medium">1</button>
-                                <button class="w-8 h-8 rounded hover:bg-slate-100 text-sm font-medium">2</button>
-                                <button class="w-8 h-8 rounded hover:bg-slate-100 text-sm font-medium">3</button>
-                                <span class="px-2 text-slate-400">...</span>
-                                <button class="w-8 h-8 rounded hover:bg-slate-100 text-sm font-medium">15</button>
-                            </div>
-                            <button class="px-3 py-1.5 text-sm text-slate-600 hover:text-slate-800">Next →</button>
                         </div>
                     </div>
 
@@ -292,18 +351,26 @@
                         <!-- Ticket Summary -->
                         <div class="bg-white rounded-xl border border-slate-200 p-6">
                             <h3 class="text-lg font-semibold text-slate-800 mb-4">Ticket Summary</h3>
-                            <div class="space-y-4">
+                            <div class="space-y-3">
                                 <div class="flex items-center justify-between">
                                     <div class="text-sm text-slate-600">Total Tickets</div>
-                                    <div class="text-lg font-semibold text-slate-900">142</div>
+                                    <div id="totalTickets" class="text-lg font-semibold text-slate-900">0</div>
                                 </div>
                                 <div class="flex items-center justify-between">
-                                    <div class="text-sm text-slate-600">Open Tickets</div>
-                                    <div class="text-lg font-semibold text-slate-900">31</div>
+                                    <div class="text-sm text-slate-600">Open</div>
+                                    <div id="openTickets" class="text-lg font-semibold text-blue-600">0</div>
                                 </div>
                                 <div class="flex items-center justify-between">
-                                    <div class="text-sm text-slate-600">Resolved Tickets</div>
-                                    <div class="text-lg font-semibold text-slate-900">84</div>
+                                    <div class="text-sm text-slate-600">Assigned</div>
+                                    <div id="assignedTickets" class="text-lg font-semibold text-purple-600">0</div>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <div class="text-sm text-slate-600">In Progress</div>
+                                    <div id="summaryInProgress" class="text-lg font-semibold text-orange-600">0</div>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <div class="text-sm text-slate-600">Resolved / Closed</div>
+                                    <div id="summaryResolved" class="text-lg font-semibold text-green-600">0</div>
                                 </div>
                             </div>
                         </div>
@@ -314,40 +381,8 @@
                                 <h3 class="text-lg font-semibold text-slate-800">Recent Activity</h3>
                                 <a href="audit_logs.html" class="text-sm text-primary hover:underline">View All Logs</a>
                             </div>
-                            <div class="space-y-4">
-                                <div class="flex gap-3">
-                                    <div
-                                        class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
-                                        <span class="material-icons text-green-600 text-sm">check</span>
-                                    </div>
-                                    <div class="flex-1">
-                                        <p class="text-sm font-medium text-slate-800">#INC-4100 was resolved by</p>
-                                        <p class="text-sm text-slate-600">Elena Vance</p>
-                                        <p class="text-xs text-slate-400 mt-1">3 mins ago</p>
-                                    </div>
-                                </div>
-                                <div class="flex gap-3">
-                                    <div
-                                        class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
-                                        <span class="material-icons text-blue-600 text-sm">comment</span>
-                                    </div>
-                                    <div class="flex-1">
-                                        <p class="text-sm font-medium text-slate-800">System Admin commented</p>
-                                        <p class="text-sm text-slate-600">on ticket #INC-4201</p>
-                                        <p class="text-xs text-slate-400 mt-1">14 mins ago</p>
-                                    </div>
-                                </div>
-                                <div class="flex gap-3">
-                                    <div
-                                        class="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
-                                        <span class="material-icons text-red-600 text-sm">warning</span>
-                                    </div>
-                                    <div class="flex-1">
-                                        <p class="text-sm font-medium text-slate-800">High Priority #INC-4215</p>
-                                        <p class="text-sm text-slate-600">reported from London Office</p>
-                                        <p class="text-xs text-slate-400 mt-1">28 mins ago</p>
-                                    </div>
-                                </div>
+                            <div id="recentActivityList" class="space-y-4">
+                                <div class="text-sm text-slate-400 text-center py-4">Loading activity…</div>
                             </div>
                         </div>
 
@@ -360,126 +395,240 @@
 
     <script src="js/app.js"></script>
     <script>
+        let allTicketsCache = [];
+
         document.addEventListener('DOMContentLoaded', function () {
             checkAuth();
             loadUserInfo();
-            loadStats();
-            loadAllTickets();
+            refreshAll();
+            document.getElementById('raiseForm').addEventListener('submit', handleRaiseTicketSubmit);
+        });
+
+        // Close profile menu when clicking outside
+        document.addEventListener('click', function (e) {
+            const menu = document.getElementById('profileMenu');
+            const btn = document.getElementById('profileBtn');
+            if (menu && !menu.contains(e.target) && btn && !btn.contains(e.target)) {
+                menu.classList.add('hidden');
+            }
         });
 
         function toggleProfileMenu() {
             const menu = document.getElementById('profileMenu');
-            // Toggle hidden class
-            if (menu.classList.contains('hidden')) {
-                menu.classList.remove('hidden');
-            } else {
-                menu.classList.add('hidden');
-            }
+            menu.classList.toggle('hidden');
         }
 
-        function closeProfileMenu() {
-            // Slight delay to allow clicking links inside
-            const menu = document.getElementById('profileMenu');
-            if (!menu.matches(':hover')) {
-                menu.classList.add('hidden');
-            }
+        async function refreshAll() {
+            await Promise.all([
+                loadAdminTickets(),
+                loadAdminStats(),
+                loadRecentActivity()
+            ]);
         }
 
-        // Load tickets on page load
-        document.addEventListener('DOMContentLoaded', function () {
-            loadAdminTickets();
-        });
-
-        // Load and display all tickets for admin
         async function loadAdminTickets() {
-            try {
-                const tickets = await fetchAllTickets();
-                const ticketsContainer = document.getElementById('allTicketsList');
-                
-                if (!tickets || tickets.length === 0) {
-                    ticketsContainer.innerHTML = '<tr><td colspan="6" class="px-6 py-4 text-center text-slate-500">No tickets found</td></tr>';
-                    return;
+            const tickets = await fetchAllTickets();
+            allTicketsCache = tickets;
+            renderTicketTable(tickets);
+            updateTicketStatistics(tickets);
+        }
+
+        function renderTicketTable(tickets) {
+            const tbody = document.getElementById('allTicketsList');
+            const subtitle = document.getElementById('queueSubtitle');
+            if (subtitle) subtitle.textContent = `Showing ${tickets.length} ticket${tickets.length !== 1 ? 's' : ''}`;
+
+            if (!tickets || tickets.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="px-6 py-8 text-center text-slate-400">No tickets found</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = tickets.map(ticket => {
+                let displayStatus = ticket.status || 'OPEN';
+                if (ticket.slaBreached && ticket.status !== 'RESOLVED' && ticket.status !== 'CLOSED') {
+                    displayStatus = 'SLA_BREACHED';
                 }
-
-                ticketsContainer.innerHTML = tickets.map((ticket, index) => `
-                    <tr class="hover:bg-slate-50 transition-colors cursor-pointer" onclick="viewTicket(${ticket.id})">
-                        <td class="px-6 py-4 text-sm font-medium text-slate-900">#${ticket.id}</td>
-                        <td class="px-6 py-4 text-sm text-slate-900">
-                            <div class="font-medium">${ticket.title}</div>
-                            <div class="text-xs text-slate-500">${ticket.description ? ticket.description.substring(0, 50) : ''}</div>
-                        </td>
-                        <td class="px-6 py-4 text-sm">
-                            <span class="px-2 py-1 rounded text-xs font-medium ${getPriorityColor(ticket.priority)}">
-                                ${ticket.priority || 'N/A'}
-                            </span>
-                        </td>
-                        <td class="px-6 py-4 text-sm">
-                            <span class="px-2 py-1 rounded text-xs font-medium ${getStatusColor(ticket.status)}">
-                                ${ticket.status || 'OPEN'}
-                            </span>
-                        </td>
-                        <td class="px-6 py-4 text-sm text-slate-600">
-                            ${ticket.assignedTo ? ticket.assignedTo.name : 'Unassigned'}
-                        </td>
-                        <td class="px-6 py-4 text-right">
-                            <button class="text-primary hover:text-primary/80 text-sm font-medium" onclick="viewTicket(${ticket.id})">
-                                View
-                            </button>
-                        </td>
-                    </tr>
-                `).join('');
-
-                // Update statistics
-                updateTicketStatistics(tickets);
-            } catch (error) {
-                console.error('Error loading tickets:', error);
-            }
+                return `
+                <tr class="hover:bg-slate-50 transition-colors">
+                    <td class="px-6 py-4 text-sm font-medium text-primary cursor-pointer" onclick="viewTicket(${ticket.id})">#${ticket.id}</td>
+                    <td class="px-6 py-4 text-sm cursor-pointer" onclick="viewTicket(${ticket.id})">
+                        <div class="font-medium text-slate-900">${escHtml(ticket.title)}</div>
+                        <div class="text-xs text-slate-500">${ticket.createdBy ? escHtml(ticket.createdBy.name) : ''}</div>
+                    </td>
+                    <td class="px-6 py-4 text-sm">
+                        <span class="px-2 py-1 rounded text-xs font-medium ${getPriorityColor(ticket.priority)}">${ticket.priority || 'N/A'}</span>
+                    </td>
+                    <td class="px-6 py-4 text-sm">
+                        <span class="px-2 py-1 rounded text-xs font-medium ${getStatusColor(displayStatus)}">${displayStatus.replace('_', ' ')}</span>
+                    </td>
+                    <td class="px-6 py-4 text-sm text-slate-600">
+                        ${ticket.assignedTo ? escHtml(ticket.assignedTo.name) : '<span class="text-orange-500 font-medium">Unassigned</span>'}
+                    </td>
+                    <td class="px-6 py-4 text-right">
+                        <div class="flex justify-end gap-2">
+                            <button onclick="viewTicket(${ticket.id})" class="px-3 py-1 bg-slate-100 border border-slate-200 rounded text-xs hover:bg-slate-200 text-slate-700 font-medium">View Details</button>
+                        </div>
+                    </td>
+                </tr>
+                `;
+            }).join('');
         }
 
-        function getPriorityColor(priority) {
-            switch(priority) {
-                case 'HIGH':
-                case 'CRITICAL':
-                    return 'bg-red-100 text-red-800';
-                case 'MEDIUM':
-                    return 'bg-yellow-100 text-yellow-800';
-                case 'LOW':
-                    return 'bg-green-100 text-green-800';
-                default:
-                    return 'bg-slate-100 text-slate-800';
+        function filterTicketTable(query) {
+            if (!query) {
+                renderTicketTable(allTicketsCache);
+                return;
             }
-        }
-
-        function getStatusColor(status) {
-            switch(status) {
-                case 'OPEN':
-                    return 'bg-blue-100 text-blue-800';
-                case 'ASSIGNED':
-                    return 'bg-purple-100 text-purple-800';
-                case 'IN_PROGRESS':
-                    return 'bg-orange-100 text-orange-800';
-                case 'RESOLVED':
-                case 'CLOSED':
-                    return 'bg-green-100 text-green-800';
-                default:
-                    return 'bg-slate-100 text-slate-800';
-            }
+            const q = query.toLowerCase();
+            const filtered = allTicketsCache.filter(t =>
+                String(t.id).includes(q) ||
+                (t.title && t.title.toLowerCase().includes(q)) ||
+                (t.status && t.status.toLowerCase().includes(q)) ||
+                (t.assignedTo && t.assignedTo.name && t.assignedTo.name.toLowerCase().includes(q)) ||
+                (t.createdBy && t.createdBy.name && t.createdBy.name.toLowerCase().includes(q))
+            );
+            renderTicketTable(filtered);
         }
 
         function updateTicketStatistics(tickets) {
-            // Calculate statistics
-            const breachedCount = tickets.filter(t => t.slaBreached).length;
-            const unassignedCount = tickets.filter(t => !t.assignedTo).length;
-            const openCount = tickets.filter(t => t.status === 'OPEN').length;
-            const resolvedCount = tickets.filter(t => t.status === 'RESOLVED' || t.status === 'CLOSED').length;
+            const slaBreached = tickets.filter(t => t.slaBreached).length;
+            const unassigned = tickets.filter(t => t.status === 'OPEN').length;
+            const inProgress = tickets.filter(t => t.status === 'IN_PROGRESS').length;
+            const resolved = tickets.filter(t => t.status === 'RESOLVED' || t.status === 'CLOSED').length;
+            const assigned = tickets.filter(t => t.status === 'ASSIGNED').length;
+            const total = tickets.length;
 
-            // Update display
-            document.getElementById('breachedTickets').textContent = breachedCount;
-            document.getElementById('unassignedTickets').textContent = unassignedCount;
+            setEl('breachedTickets', slaBreached);
+            setEl('unassignedTickets', unassigned);
+            setEl('inProgressTickets', inProgress);
+            setEl('resolvedTickets', resolved);
+            setEl('totalTickets', total);
+            setEl('openTickets', unassigned);
+            setEl('assignedTickets', assigned);
+            setEl('summaryInProgress', inProgress);
+            setEl('summaryResolved', resolved);
         }
 
-        function viewTicket(ticketId) {
-            window.location.href = `ticket-details.html?id=${ticketId}`;
+        async function loadAdminStats() {
+            await loadStats(); // from app.js
+        }
+
+        async function loadRecentActivity() {
+            const logs = await fetchRecentAuditLogs();
+            const container = document.getElementById('recentActivityList');
+            if (!logs || logs.length === 0) {
+                container.innerHTML = '<div class="text-sm text-slate-400 text-center py-4">No activity yet</div>';
+                return;
+            }
+            container.innerHTML = logs.slice(0, 5).map(log => {
+                const { icon, color } = getActionIcon(log.action);
+                const ticketId = log.ticket ? log.ticket.id : null;
+                const ticketRefBadge = ticketId ? 
+                    `<a href="ticket-details.html?id=${ticketId}" class="inline-flex px-1.5 py-0.5 bg-blue-50 text-blue-600 rounded text-[10px] font-bold border border-blue-100 items-center gap-1 hover:bg-blue-100 transition-colors ml-1">
+                        <span class="material-icons text-[10px]">confirmation_number</span>#${ticketId}
+                    </a>` : '';
+                
+                return `
+                    <div class="flex gap-3 items-start">
+                        <div class="w-8 h-8 ${color} rounded-full flex items-center justify-center flex-shrink-0 animate-pulse-subtle">
+                            <span class="material-icons text-sm">${icon}</span>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center gap-1 flex-wrap">
+                                <p class="text-xs font-semibold text-slate-800">${escHtml(log.user ? log.user.name : 'System')}</p>
+                                ${ticketRefBadge}
+                            </div>
+                            <p class="text-sm text-slate-600 truncate mt-0.5" title="${escHtml(log.details || log.action)}">
+                                ${escHtml(log.details || log.action)}
+                            </p>
+                            <p class="text-[10px] text-slate-400 mt-1 uppercase tracking-wider font-medium">${formatRelativeTime(log.createdAt)}</p>
+                        </div>
+                    </div>`;
+            }).join('');
+        }
+
+        // ===== ASSIGN MODAL =====
+        let currentAssignTicketId = null;
+
+        async function openAssignModal(ticketId, ticketTitle) {
+            currentAssignTicketId = ticketId;
+            document.getElementById('assignTicketId').textContent = '#' + ticketId;
+            document.getElementById('assignTicketTitle').textContent = ticketTitle;
+            document.getElementById('assignModal').classList.add('open');
+
+            // Load engineers
+            const engineers = await fetchEngineers();
+            const sel = document.getElementById('engineerSelect');
+            if (engineers.length === 0) {
+                sel.innerHTML = '<option value="">No engineers available</option>';
+            } else {
+                sel.innerHTML = '<option value="">Select engineer…</option>' +
+                    engineers.map(e => `<option value="${e.id}">${escHtml(e.name)} (${escHtml(e.email)})</option>`).join('');
+            }
+        }
+
+        function closeAssignModal() {
+            document.getElementById('assignModal').classList.remove('open');
+            currentAssignTicketId = null;
+        }
+
+        async function confirmAssign() {
+            const engineerId = document.getElementById('engineerSelect').value;
+            if (!engineerId) {
+                showError('Please select an engineer');
+                return;
+            }
+            const result = await assignTicket(currentAssignTicketId, engineerId);
+            if (result) {
+                closeAssignModal();
+                refreshAll();
+            }
+        }
+
+        // ===== HELPERS =====
+        function setEl(id, val) {
+            const el = document.getElementById(id);
+            if (el) el.textContent = val;
+        }
+
+        function escHtml(str) {
+            if (!str) return '';
+            return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        }
+
+        // ===== RAISE MODAL =====
+        function openRaiseModal() {
+            document.getElementById('raiseForm').reset();
+            document.getElementById('raiseModal').classList.add('open');
+        }
+
+        function closeRaiseModal() {
+            document.getElementById('raiseModal').classList.remove('open');
+        }
+
+        async function handleRaiseTicketSubmit(e) {
+            e.preventDefault();
+            const btn = document.getElementById('raiseSubmitBtn');
+            btn.disabled = true;
+            btn.innerHTML = 'Submitting…';
+
+            const formData = {
+                title: document.getElementById('raiseTitle').value,
+                category: document.getElementById('raiseCategory').value,
+                priority: document.getElementById('raisePriority').value,
+                location: document.getElementById('raiseLocation').value,
+                description: document.getElementById('raiseDescription').value
+            };
+
+            const result = await createTicket(formData);
+
+            btn.disabled = false;
+            btn.innerHTML = '<span class="material-icons text-sm">send</span> Submit Issue';
+
+            if (result) {
+                closeRaiseModal();
+                refreshAll();
+            }
         }
     </script>
 </body>

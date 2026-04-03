@@ -5,6 +5,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Engineer Dashboard - ITSM</title>
+    <meta name="description" content="ITSM Engineer Dashboard – view and manage your assigned support tickets." />
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
         rel="stylesheet" />
@@ -18,9 +19,7 @@
                         "primary": "#137fec",
                         "background-light": "#f6f7f8",
                     },
-                    fontFamily: {
-                        "display": ["Inter", "sans-serif"]
-                    },
+                    fontFamily: { "display": ["Inter", "sans-serif"] },
                 },
             },
         }
@@ -50,42 +49,32 @@
                 <div class="flex items-center gap-4">
                     <button class="relative p-2 text-slate-600 hover:bg-slate-100 rounded-lg">
                         <span class="material-icons">notifications</span>
-                        <span class="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
                     </button>
 
                     <!-- Profile Dropdown -->
-                    <div class="relative group z-50">
-                        <button
+                    <div class="relative z-50">
+                        <button id="profileBtn" onclick="toggleProfileMenu()"
                             class="flex items-center gap-3 pl-4 border-l border-slate-200 hover:bg-slate-50 p-2 rounded-lg transition-colors">
                             <div class="text-right">
-                                <div id="userName" class="text-sm font-medium text-slate-800">Support Engineer</div>
+                                <div id="userName" class="text-sm font-medium text-slate-800">Engineer</div>
                                 <div class="text-xs text-slate-500">ENGINEERING TEAM</div>
                             </div>
                             <div
-                                class="w-10 h-10 bg-gradient-to-br from-primary to-blue-600 rounded-full flex items-center justify-center text-white font-semibold">
-                                S
-                            </div>
+                                class="w-10 h-10 bg-gradient-to-br from-primary to-blue-600 rounded-full flex items-center justify-center text-white font-semibold user-avatar-initial">
+                                E</div>
                         </button>
 
-                        <!-- Dropdown Menu -->
-                        <div
-                            class="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-slate-100 overflow-hidden hidden group-hover:block">
+                        <div id="profileMenu"
+                            class="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-slate-100 overflow-hidden hidden">
                             <div class="p-2">
                                 <a href="#"
                                     class="flex items-center gap-2 px-3 py-2 text-sm text-slate-600 hover:bg-slate-50 rounded-lg">
-                                    <span class="material-icons text-lg">person</span>
-                                    Profile
-                                </a>
-                                <a href="#"
-                                    class="flex items-center gap-2 px-3 py-2 text-sm text-slate-600 hover:bg-slate-50 rounded-lg">
-                                    <span class="material-icons text-lg">settings</span>
-                                    Settings
+                                    <span class="material-icons text-lg">person</span> Profile
                                 </a>
                                 <div class="h-px bg-slate-100 my-1"></div>
                                 <button onclick="logout()"
                                     class="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg">
-                                    <span class="material-icons text-lg">logout</span>
-                                    Logout
+                                    <span class="material-icons text-lg">logout</span> Logout
                                 </button>
                             </div>
                         </div>
@@ -94,6 +83,35 @@
             </div>
         </div>
     </header>
+
+    <!-- Resolve Ticket Modal -->
+    <div id="resolveModal" class="fixed inset-0 bg-black/50 z-50 hidden items-center justify-center">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-xl font-bold text-slate-800">Resolve Ticket</h3>
+                <button onclick="closeResolveModal()" class="p-2 hover:bg-slate-100 rounded-lg">
+                    <span class="material-icons text-slate-500">close</span>
+                </button>
+            </div>
+
+            <p class="text-sm text-slate-600 mb-4">Please provide any final resolution notes for this ticket (optional).
+            </p>
+
+            <textarea id="resolutionNotesInput" rows="4"
+                class="w-full px-4 py-3 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary resize-none mb-6"
+                placeholder="Type resolution notes here..."></textarea>
+
+            <input type="hidden" id="resolveTicketId" value="" />
+
+            <div class="flex gap-3">
+                <button onclick="closeResolveModal()"
+                    class="flex-1 px-4 py-2.5 border border-slate-200 rounded-lg text-sm font-medium hover:bg-slate-50">Cancel</button>
+                <button onclick="confirmResolve()"
+                    class="flex-1 px-4 py-2.5 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700">Confirm
+                    Resolve</button>
+            </div>
+        </div>
+    </div>
 
     <!-- Main Content -->
     <main class="max-w-7xl mx-auto px-8 py-8">
@@ -107,8 +125,8 @@
                         <span class="material-icons text-blue-600">assignment</span>
                     </div>
                 </div>
-                <div id="assignedCount" class="text-3xl font-bold text-slate-900 mb-1">8</div>
-                <div class="text-xs text-slate-500">Active tickets</div>
+                <div id="assignedCount" class="text-3xl font-bold text-slate-900 mb-1">0</div>
+                <div class="text-xs text-slate-500">Total assigned tickets</div>
             </div>
 
             <div class="bg-white rounded-xl border border-slate-200 p-6">
@@ -118,19 +136,19 @@
                         <span class="material-icons text-purple-600">pending_actions</span>
                     </div>
                 </div>
-                <div id="inProgressCount" class="text-3xl font-bold text-slate-900 mb-1">3</div>
+                <div id="inProgressCount" class="text-3xl font-bold text-slate-900 mb-1">0</div>
                 <div class="text-xs text-slate-500">Currently working</div>
             </div>
 
             <div class="bg-white rounded-xl border border-slate-200 p-6">
                 <div class="flex items-center justify-between mb-2">
-                    <div class="text-sm font-medium text-slate-600">Resolved Today</div>
+                    <div class="text-sm font-medium text-slate-600">Resolved</div>
                     <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
                         <span class="material-icons text-green-600">check_circle</span>
                     </div>
                 </div>
-                <div id="resolvedTodayCount" class="text-3xl font-bold text-slate-900 mb-1">12</div>
-                <div class="text-xs text-slate-500">Completed</div>
+                <div id="resolvedTodayCount" class="text-3xl font-bold text-slate-900 mb-1">0</div>
+                <div class="text-xs text-slate-500">Resolved tickets</div>
             </div>
 
             <div class="bg-white rounded-xl border border-slate-200 p-6">
@@ -140,7 +158,7 @@
                         <span class="material-icons text-orange-600">schedule</span>
                     </div>
                 </div>
-                <div class="text-3xl font-bold text-slate-900 mb-1">14m</div>
+                <div id="avgResponseTime" class="text-3xl font-bold text-slate-900 mb-1">—</div>
                 <div class="text-xs text-slate-500">Average time</div>
             </div>
         </div>
@@ -150,20 +168,12 @@
             <div class="p-6 border-b border-slate-200 flex items-center justify-between">
                 <div>
                     <h2 class="text-lg font-semibold text-slate-800">My Assigned Tickets</h2>
-                    <p class="text-sm text-slate-500">Tickets currently assigned to you</p>
+                    <p id="ticketSubtitle" class="text-sm text-slate-500">Tickets currently assigned to you</p>
                 </div>
-                <div class="flex items-center gap-2">
-                    <button
-                        class="px-3 py-1.5 text-sm border border-slate-200 rounded-lg hover:bg-slate-50 flex items-center gap-1">
-                        <span class="material-icons text-sm">filter_list</span>
-                        Filter
-                    </button>
-                    <button
-                        class="px-3 py-1.5 text-sm border border-slate-200 rounded-lg hover:bg-slate-50 flex items-center gap-1">
-                        <span class="material-icons text-sm">sort</span>
-                        Sort
-                    </button>
-                </div>
+                <button onclick="loadEngineerTickets()"
+                    class="px-3 py-1.5 text-sm border border-slate-200 rounded-lg hover:bg-slate-50 flex items-center gap-1">
+                    <span class="material-icons text-sm">refresh</span> Refresh
+                </button>
             </div>
 
             <div class="overflow-x-auto">
@@ -174,31 +184,18 @@
                             <th class="px-6 py-3 text-left">Description</th>
                             <th class="px-6 py-3 text-left">Priority</th>
                             <th class="px-6 py-3 text-left">Status</th>
-                            <th class="px-6 py-3 text-left">SLA Deadline</th>
+                            <th class="px-6 py-3 text-left">SLA</th>
                             <th class="px-6 py-3 text-right">Actions</th>
                         </tr>
                     </thead>
                     <tbody id="ticketsList" class="divide-y divide-slate-100">
-                        <!-- Populated by JavaScript -->
+                        <tr>
+                            <td colspan="6" class="px-6 py-8 text-center text-slate-400">Loading tickets…</td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
-
-            <div class="p-4 border-t border-slate-200 flex items-center justify-between">
-                <div class="text-sm text-slate-600">
-                    Showing <span class="font-medium">1-8</span> of <span class="font-medium">8</span> tickets
-                </div>
-                <div class="flex items-center gap-2">
-                    <button class="px-3 py-1.5 border border-slate-200 rounded-lg hover:bg-slate-50 text-sm">←
-                        Previous</button>
-                    <button class="w-8 h-8 rounded bg-primary text-white text-sm font-medium">1</button>
-                    <button class="px-3 py-1.5 border border-slate-200 rounded-lg hover:bg-slate-50 text-sm">Next
-                        →</button>
-                </div>
-            </div>
         </div>
-
-        <!-- Quick Actions Removed as per requirement -->
 
     </main>
 
@@ -210,78 +207,150 @@
             loadEngineerTickets();
         });
 
+        // Close profile menu on outside click
+        document.addEventListener('click', function (e) {
+            const menu = document.getElementById('profileMenu');
+            const btn = document.getElementById('profileBtn');
+            if (menu && !menu.contains(e.target) && btn && !btn.contains(e.target)) {
+                menu.classList.add('hidden');
+            }
+        });
+
+        function toggleProfileMenu() {
+            document.getElementById('profileMenu').classList.toggle('hidden');
+        }
+
         async function loadEngineerTickets() {
-            const tickets = await loadTickets();
+            const tickets = await loadTickets(); // returns tickets assigned to me
             const ticketsList = document.getElementById('ticketsList');
 
+            // Update metric cards
+            const total = tickets.length;
+            const inProg = tickets.filter(t => t.status === 'IN_PROGRESS').length;
+            const resolved = tickets.filter(t => t.status === 'RESOLVED' || t.status === 'CLOSED').length;
+            const assigned = tickets.filter(t => t.status === 'ASSIGNED').length;
+
+            setEl('assignedCount', total);
+            setEl('inProgressCount', inProg);
+            setEl('resolvedTodayCount', resolved);
+
+            // Calculate average response time from resolved tickets
+            const resolvedWithTimes = tickets.filter(t => t.status === 'RESOLVED' && t.createdAt && t.resolvedAt);
+            if (resolvedWithTimes.length > 0) {
+                const avgMs = resolvedWithTimes.reduce((acc, t) => {
+                    return acc + (new Date(t.resolvedAt) - new Date(t.createdAt));
+                }, 0) / resolvedWithTimes.length;
+                const avgHours = Math.floor(avgMs / 3600000);
+                const avgMins = Math.floor((avgMs % 3600000) / 60000);
+                setEl('avgResponseTime', avgHours > 0 ? `${avgHours}h ${avgMins}m` : `${avgMins}m`);
+            } else {
+                setEl('avgResponseTime', '—');
+            }
+
+            const subtitle = document.getElementById('ticketSubtitle');
+            if (subtitle) subtitle.textContent = `Showing ${total} ticket${total !== 1 ? 's' : ''} assigned to you`;
+
             if (!tickets || tickets.length === 0) {
-                ticketsList.innerHTML = '<tr><td colspan="6" class="px-6 py-8 text-center text-slate-500">No tickets assigned</td></tr>';
+                ticketsList.innerHTML = '<tr><td colspan="6" class="px-6 py-8 text-center text-slate-400">No tickets assigned yet</td></tr>';
                 return;
             }
 
-            // Update counts
-            document.getElementById('assignedCount').textContent = tickets.length;
-            document.getElementById('inProgressCount').textContent = tickets.filter(t => t.status === 'IN_PROGRESS').length;
-            document.getElementById('resolvedTodayCount').textContent = tickets.filter(t => t.status === 'RESOLVED').length;
-
             const priorityColors = {
                 'HIGH': 'bg-red-100 text-red-700',
+                'CRITICAL': 'bg-red-100 text-red-700',
                 'MEDIUM': 'bg-orange-100 text-orange-700',
                 'LOW': 'bg-green-100 text-green-700'
             };
-
             const statusColors = {
                 'ASSIGNED': 'bg-blue-100 text-blue-700',
                 'IN_PROGRESS': 'bg-purple-100 text-purple-700',
-                'RESOLVED': 'bg-green-100 text-green-700'
+                'RESOLVED': 'bg-green-100 text-green-700',
+                'CLOSED': 'bg-slate-100 text-slate-700'
             };
 
             ticketsList.innerHTML = tickets.map(ticket => {
-                const slaClass = ticket.slaBreached ? 'text-red-600 font-medium' : 'text-slate-600';
-                const slaText = ticket.slaBreached ? 'SLA Breached!' : '2 hours remaining';
+                let displayStatus = ticket.status;
+                if (ticket.slaBreached && ticket.status !== 'RESOLVED' && ticket.status !== 'CLOSED') {
+                    displayStatus = 'SLA_BREACHED';
+                }
+                const slaClass = ticket.slaBreached ? 'text-red-600 font-medium' : 'text-slate-500';
+                const slaText = ticket.slaBreached && ticket.status !== 'RESOLVED' && ticket.status !== 'CLOSED' ?
+                    'SLA Breached!' : (ticket.slaDeadline ? formatDate(ticket.slaDeadline) : 'No SLA');
+                const canStart = ticket.status === 'ASSIGNED';
+                const canResolve = ticket.status === 'IN_PROGRESS';
+
+                const statusColor = displayStatus === 'SLA_BREACHED' ? 'bg-red-100 text-red-700' : (statusColors[displayStatus] || 'bg-slate-100 text-slate-700');
 
                 return `
-                <tr class="hover:bg-slate-50 cursor-pointer" onclick="window.location.href='ticket-details.html?id=${ticket.id}'">
+                <tr class="hover:bg-slate-50 cursor-pointer" onclick="viewTicket(${ticket.id})">
                     <td class="px-6 py-4">
-                        <div class="font-medium text-primary">#${ticket.ticketNumber || 'INC-' + ticket.id}</div>
+                        <div class="font-medium text-primary">#${ticket.id}</div>
                     </td>
                     <td class="px-6 py-4">
-                        <div class="font-medium text-slate-900">${ticket.title}</div>
-                        <div class="text-sm text-slate-500">Reported by ${ticket.createdBy ? ticket.createdBy.name : 'Unknown'}</div>
+                        <div class="font-medium text-slate-900">${escHtml(ticket.title)}</div>
+                        <div class="text-sm text-slate-500">By ${ticket.createdBy ? escHtml(ticket.createdBy.name) : 'Unknown'}</div>
                     </td>
                     <td class="px-6 py-4">
                         <span class="px-3 py-1 rounded-full text-xs font-medium uppercase ${priorityColors[ticket.priority] || 'bg-slate-100 text-slate-700'}">
-                            ${ticket.priority}
+                            ${ticket.priority || 'N/A'}
                         </span>
                     </td>
                     <td class="px-6 py-4">
-                        <span class="px-3 py-1 rounded-full text-xs font-medium ${statusColors[ticket.status] || 'bg-slate-100 text-slate-700'}">
-                            ${ticket.status}
+                        <span class="px-3 py-1 rounded-full text-xs font-medium uppercase ${statusColor}">
+                            ${displayStatus.replace('_', ' ')}
                         </span>
                     </td>
                     <td class="px-6 py-4">
                         <div class="text-sm ${slaClass}">${slaText}</div>
-                        <div class="text-xs text-slate-400">${ticket.slaBreached ? 'Overdue' : 'Sept 12, 4:00 PM'}</div>
                     </td>
                     <td class="px-6 py-4 text-right">
-                        <button onclick="event.stopPropagation(); updateTicketStatus(${ticket.id})" 
-                                class="px-3 py-1.5 bg-primary text-white rounded-lg text-sm hover:bg-blue-600">
-                            Update
-                        </button>
+                        <div class="flex justify-end gap-2" onclick="event.stopPropagation()">
+                            ${canStart ? `<button onclick="handleStartProgress(${ticket.id})" class="px-3 py-1.5 bg-purple-600 text-white rounded-lg text-xs hover:bg-purple-700">Start</button>` : ''}
+                            ${canResolve ? `<button onclick="handleResolve(${ticket.id})" class="px-3 py-1.5 bg-green-600 text-white rounded-lg text-xs hover:bg-green-700">Resolve</button>` : ''}
+                            <button onclick="viewTicket(${ticket.id})" class="px-3 py-1.5 border border-slate-200 rounded-lg text-xs hover:bg-slate-50 text-slate-600">View</button>
+                        </div>
                     </td>
-                </tr>
-            `;
+                </tr>`;
             }).join('');
         }
 
-        function updateTicketStatus(ticketId) {
-            window.location.href = `ticket-details.html?id=${ticketId}`;
+        async function handleStartProgress(ticketId) {
+            const result = await startProgress(ticketId);
+            if (result) loadEngineerTickets();
         }
 
-        // Load tickets on page load
-        document.addEventListener('DOMContentLoaded', function() {
-            loadEngineerTickets();
-        });
+        async function handleResolve(ticketId) {
+            document.getElementById('resolveTicketId').value = ticketId;
+            document.getElementById('resolutionNotesInput').value = ''; // clear prior
+
+            document.getElementById('resolveModal').classList.remove('hidden');
+            document.getElementById('resolveModal').classList.add('flex');
+        }
+
+        function closeResolveModal() {
+            document.getElementById('resolveModal').classList.remove('flex');
+            document.getElementById('resolveModal').classList.add('hidden');
+            document.getElementById('resolveTicketId').value = '';
+        }
+
+        async function confirmResolve() {
+            const ticketId = document.getElementById('resolveTicketId').value;
+            const notes = document.getElementById('resolutionNotesInput').value;
+
+            closeResolveModal();
+            const result = await resolveTicket(ticketId, notes);
+            if (result) loadEngineerTickets();
+        }
+
+        function setEl(id, val) {
+            const el = document.getElementById(id);
+            if (el) el.textContent = val;
+        }
+
+        function escHtml(str) {
+            if (!str) return '';
+            return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        }
     </script>
 </body>
 

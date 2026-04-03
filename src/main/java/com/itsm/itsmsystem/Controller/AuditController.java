@@ -24,6 +24,12 @@ public class AuditController {
         return ResponseEntity.ok(new ApiResponse<>(true, "All audit logs", auditService.getAllAuditLogs()));
     }
 
+    @GetMapping("/recent")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ApiResponse<List<AuditLog>>> getRecentAuditLogs() {
+        return ResponseEntity.ok(new ApiResponse<>(true, "Recent audit logs", auditService.getRecentAuditLogs()));
+    }
+
     @GetMapping("/ticket/{ticketId}")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ApiResponse<List<AuditLog>>> getTicketAuditLogs(@PathVariable Long ticketId) {

@@ -241,7 +241,7 @@
                 return `
                 <tr class="hover:bg-slate-50 cursor-pointer" onclick="window.location.href='ticket-details.html?id=${ticket.id}'">
                     <td class="px-6 py-4">
-                        <div class="font-medium text-primary">#${ticket.ticketNumber}</div>
+                        <div class="font-medium text-primary">#${ticket.id}</div>
                         <div class="text-sm text-slate-600">${ticket.title}</div>
                     </td>
                     <td class="px-6 py-4">
@@ -266,13 +266,15 @@
         async function handleTicketSubmit(e) {
             e.preventDefault();
 
-            const title = document.getElementById('ticketTitle').value;
-            const priority = document.getElementById('ticketPriority').value;
-            const description = document.getElementById('ticketDescription').value;
+            const formData = {
+                title: document.getElementById('ticketTitle').value,
+                priority: document.getElementById('ticketPriority').value,
+                description: document.getElementById('ticketDescription').value
+            };
 
-            const success = await createTicket(title, description, priority);
+            const result = await createTicket(formData);
 
-            if (success) {
+            if (result) {
                 document.getElementById('ticketForm').reset();
                 loadStudentTickets();
             }

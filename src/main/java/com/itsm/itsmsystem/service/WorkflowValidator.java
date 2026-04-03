@@ -25,16 +25,16 @@ public class WorkflowValidator {
     static {
         // From OPEN: can only go to ASSIGNED
         VALID_TRANSITIONS.put(TicketStatus.OPEN, EnumSet.of(TicketStatus.ASSIGNED));
-        
+
         // From ASSIGNED: can go to IN_PROGRESS
         VALID_TRANSITIONS.put(TicketStatus.ASSIGNED, EnumSet.of(TicketStatus.IN_PROGRESS));
-        
+
         // From IN_PROGRESS: can only go to RESOLVED
         VALID_TRANSITIONS.put(TicketStatus.IN_PROGRESS, EnumSet.of(TicketStatus.RESOLVED));
-        
+
         // From RESOLVED: can only go to CLOSED
         VALID_TRANSITIONS.put(TicketStatus.RESOLVED, EnumSet.of(TicketStatus.CLOSED));
-        
+
         // From CLOSED: cannot transition anywhere
         VALID_TRANSITIONS.put(TicketStatus.CLOSED, EnumSet.noneOf(TicketStatus.class));
     }
@@ -50,8 +50,7 @@ public class WorkflowValidator {
         Set<TicketStatus> allowedTransitions = VALID_TRANSITIONS.get(currentStatus);
         if (allowedTransitions == null || !allowedTransitions.contains(newStatus)) {
             throw new InvalidTicketStateException(
-                String.format("Cannot transition ticket from %s to %s", currentStatus, newStatus)
-            );
+                    String.format("Cannot transition ticket from %s to %s", currentStatus, newStatus));
         }
     }
 
@@ -62,12 +61,12 @@ public class WorkflowValidator {
         switch (action) {
             case "CREATE_TICKET" -> {
                 if (userRole != Role.FACULTY && userRole != Role.ADMIN) {
-                    throw new UnauthorizedException("Only FACULTY can create tickets");
+                    throw new UnauthorizedException("Only FACULTY or ADMIN can create tickets");
                 }
             }
-            case "ASSIGN_TICKET" -> {
-                if (userRole != Role.ADMIN) {
-                    throw new UnauthorizedException("Only ADMIN can assign tickets");
+            case "ASSIGN_TICKET", "REASSIGN_TICKET" -> {
+                if (userRole != Role.ADMIN && userRole != Role.SERVICE_DESK) {
+                    throw new UnauthorizedException("Only ADMIN or SERVICE_DESK can assign tickets");
                 }
             }
             case "START_PROGRESS" -> {
@@ -76,18 +75,23 @@ public class WorkflowValidator {
                 }
             }
             case "RESOLVE_TICKET" -> {
-                if (userRole != Role.ENGINEER && userRole != Role.ADMIN) {
-                    throw new UnauthorizedException("Only ENGINEER or ADMIN can resolve tickets");
+                if (userRole != Role.ENGINEER && userRole != Role.ADMIN && userRole != Role.SERVICE_DESK) {
+                    throw new UnauthorizedException("Only ENGINEER, ADMIN or SERVICE_DESK can resolve tickets");
                 }
             }
             case "CLOSE_TICKET" -> {
                 if (userRole != Role.FACULTY && userRole != Role.ADMIN) {
-                    throw new UnauthorizedException("Only FACULTY can close tickets");
+                    throw new UnauthorizedException("Only FACULTY or ADMIN can close tickets");
                 }
             }
             case "VIEW_ALL_TICKETS" -> {
-                if (userRole != Role.ADMIN) {
-                    throw new UnauthorizedException("Only ADMIN can view all tickets");
+                if (userRole != Role.ADMIN && userRole != Role.SERVICE_DESK) {
+                    throw new UnauthorizedException("Only ADMIN or SERVICE_DESK can view all tickets");
+                }
+            }
+            case "ESCALATE_PRIORITY" -> {
+                if (userRole != Role.ADMIN && userRole != Role.SERVICE_DESK) {
+                    throw new UnauthorizedException("Only ADMIN or SERVICE_DESK can escalate priority");
                 }
             }
             default -> throw new IllegalArgumentException("Unknown action: " + action);

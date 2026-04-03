@@ -1,7 +1,4 @@
--- ========================================
--- DROP AND RECREATE ITSM DATABASE
--- Run this to fix ENUM schema issues
--- ========================================
+
 
 DROP DATABASE IF EXISTS itsm_db;
 CREATE DATABASE itsm_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
@@ -34,6 +31,8 @@ CREATE TABLE tickets (
     updated_at DATETIME,
     resolved_at DATETIME,
     closed_at DATETIME,
+    sla_deadline DATETIME,
+    sla_breached BOOLEAN DEFAULT FALSE,
     FOREIGN KEY (created_by_id) REFERENCES users(id),
     FOREIGN KEY (assigned_to_id) REFERENCES users(id),
     INDEX idx_ticket_status (status),
@@ -48,6 +47,7 @@ CREATE TABLE audit_logs (
     action VARCHAR(100) NOT NULL,
     user_id BIGINT,
     ticket_id BIGINT,
+    user_role VARCHAR(20),
     details TEXT,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id),

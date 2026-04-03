@@ -9,8 +9,6 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.NoHandlerFoundException;
 
-import java.time.LocalDateTime;
-
 @RestControllerAdvice
 @RequiredArgsConstructor
 public class GlobalExceptionHandler {
@@ -19,10 +17,9 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleResourceNotFound(
             ResourceNotFoundException ex, WebRequest request) {
         ErrorResponse error = new ErrorResponse(
-            HttpStatus.NOT_FOUND.value(),
-            ex.getMessage(),
-            "Resource not found"
-        );
+                HttpStatus.NOT_FOUND.value(),
+                ex.getMessage(),
+                "Resource not found");
         error.setPath(request.getDescription(false).replace("uri=", ""));
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
     }
@@ -31,10 +28,9 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleUnauthorized(
             UnauthorizedException ex, WebRequest request) {
         ErrorResponse error = new ErrorResponse(
-            HttpStatus.UNAUTHORIZED.value(),
-            ex.getMessage(),
-            "Unauthorized access"
-        );
+                HttpStatus.UNAUTHORIZED.value(),
+                ex.getMessage(),
+                "Unauthorized access");
         error.setPath(request.getDescription(false).replace("uri=", ""));
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
     }
@@ -43,10 +39,9 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleInvalidTicketState(
             InvalidTicketStateException ex, WebRequest request) {
         ErrorResponse error = new ErrorResponse(
-            HttpStatus.BAD_REQUEST.value(),
-            ex.getMessage(),
-            "Invalid ticket state transition"
-        );
+                HttpStatus.BAD_REQUEST.value(),
+                ex.getMessage(),
+                "Invalid ticket state transition");
         error.setPath(request.getDescription(false).replace("uri=", ""));
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
     }
@@ -55,15 +50,14 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleValidation(
             MethodArgumentNotValidException ex, WebRequest request) {
         String message = ex.getBindingResult().getFieldErrors().stream()
-            .map(e -> e.getField() + ": " + e.getDefaultMessage())
-            .reduce((a, b) -> a + ", " + b)
-            .orElse("Validation failed");
-        
+                .map(e -> e.getField() + ": " + e.getDefaultMessage())
+                .reduce((a, b) -> a + ", " + b)
+                .orElse("Validation failed");
+
         ErrorResponse error = new ErrorResponse(
-            HttpStatus.BAD_REQUEST.value(),
-            message,
-            "Validation error"
-        );
+                HttpStatus.BAD_REQUEST.value(),
+                message,
+                "Validation error");
         error.setPath(request.getDescription(false).replace("uri=", ""));
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
     }
@@ -72,10 +66,9 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleNotFound(
             NoHandlerFoundException ex, WebRequest request) {
         ErrorResponse error = new ErrorResponse(
-            HttpStatus.NOT_FOUND.value(),
-            "Endpoint not found: " + ex.getRequestURL(),
-            "Not found"
-        );
+                HttpStatus.NOT_FOUND.value(),
+                "Endpoint not found: " + ex.getRequestURL(),
+                "Not found");
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
     }
 
@@ -83,10 +76,9 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleGlobalException(
             Exception ex, WebRequest request) {
         ErrorResponse error = new ErrorResponse(
-            HttpStatus.INTERNAL_SERVER_ERROR.value(),
-            "An error occurred: " + ex.getMessage(),
-            "Internal server error"
-        );
+                HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                "An error occurred: " + ex.getMessage(),
+                "Internal server error");
         error.setPath(request.getDescription(false).replace("uri=", ""));
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
     }

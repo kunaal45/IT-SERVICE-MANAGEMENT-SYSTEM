@@ -4,20 +4,25 @@ import com.itsm.itsmsystem.enums.IssueCategory;
 import com.itsm.itsmsystem.enums.Role;
 import com.itsm.itsmsystem.enums.TicketPriority;
 import com.itsm.itsmsystem.enums.TicketStatus;
-import com.itsm.itsmsystem.model.entity.AuditLog;
 import com.itsm.itsmsystem.model.entity.SLARule;
 import com.itsm.itsmsystem.model.entity.Ticket;
 import com.itsm.itsmsystem.model.entity.User;
 import com.itsm.itsmsystem.repository.AuditLogRepository;
+import com.itsm.itsmsystem.repository.CommentRepository;
 import com.itsm.itsmsystem.repository.SLARepository;
 import com.itsm.itsmsystem.repository.TicketRepository;
 import com.itsm.itsmsystem.repository.UserRepository;
+import com.itsm.itsmsystem.service.AuditService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
+import com.itsm.itsmsystem.enums.EngineerLevel;
 import java.time.LocalDateTime;
+import java.util.EnumSet;
+import java.util.Set;
 
 @Component
 @RequiredArgsConstructor
@@ -25,46 +30,139 @@ public class DataInitializer implements CommandLineRunner {
 
     private final UserRepository userRepository;
     private final TicketRepository ticketRepository;
+    private final AuditService auditService;
     private final AuditLogRepository auditLogRepository;
+    private final CommentRepository commentRepository;
     private final SLARepository slaRepository;
     private final PasswordEncoder passwordEncoder;
 
     @Override
     public void run(String... args) {
-        if (userRepository.count() > 0) {
-            printStartupBanner();
-            return;
-        }
+        try {
+            cleanupLegacyUsers();
+            initUsers();
+            initSLARules();
 
-        initUsers();
-        initSLARules();
-        initTickets();
-        printStartupBanner();
+            if (ticketRepository.count() == 0) {
+                initTickets();
+            }
+            printStartupBanner();
+        } catch (Exception e) {
+            System.err.println("❌ CRITICAL ERROR DURING DATA INITIALIZATION:");
+            e.printStackTrace();
+            throw e;
+        }
+    }
+
+    @Transactional
+    private void cleanupLegacyUsers() {
+        String[] legacyEmails = {
+                "hardware@itsm.com", "network@itsm.com", "software@itsm.com",
+                "infra@itsm.com", "facilities@itsm.com", "faculty@itsm.com", "prof@itsm.com"
+        };
+        for (String email : legacyEmails) {
+            userRepository.findByEmail(email).ifPresent(user -> {
+                System.out.println("Processing cleanup for user: " + email);
+
+                // 1. Tickets where this user is assigned: Reset them to UNASSIGNED
+                ticketRepository.findByAssignedToId(user.getId()).forEach(t -> {
+                    t.setAssignedTo(null);
+                    t.setStatus(TicketStatus.OPEN);
+                    ticketRepository.save(t);
+                });
+
+                // 2. Tickets where this user is the CREATOR: Delete them and their related
+                // logs/comments
+                ticketRepository.findByCreatedById(user.getId()).forEach(t -> {
+                    auditLogRepository.deleteByTicketId(t.getId());
+                    commentRepository.deleteByTicketId(t.getId());
+                    ticketRepository.delete(t);
+                });
+
+                // 3. Independent Audit Logs and Comments by this user
+                auditLogRepository.deleteByUserId(user.getId());
+                commentRepository.deleteByUserId(user.getId());
+
+                // 4. Finally delete the user
+                userRepository.delete(user);
+                System.out.println("🗑️ Successfully removed legacy user: " + email);
+            });
+        }
     }
 
     private void initUsers() {
-        createUser("System Admin", "admin@itsm.com", "admin123", Role.ADMIN);
-        createUser("John Engineer", "engineer@itsm.com", "eng123", Role.ENGINEER);
-        createUser("Tech Support", "tech@itsm.com", "eng123", Role.ENGINEER);
-        createUser("Dr. Faculty Member", "faculty@itsm.com", "faculty123", Role.FACULTY);
-        createUser("Prof. Science", "prof@itsm.com", "faculty123", Role.FACULTY);
+        // Essential System Users
+        seedSystemUser("System Admin", Role.ADMIN);
+        seedSystemUser("Service Desk Agent", Role.SERVICE_DESK);
+
+        // Required Engineers with Category Mapping
+
+        // Group 1: INFRASTRUCTURE, ATTENDANCE_SYSTEM, RESOURCE_REQUEST
+        Set<IssueCategory> group1 = EnumSet.of(IssueCategory.INFRASTRUCTURE, IssueCategory.ATTENDANCE_SYSTEM,
+                IssueCategory.RESOURCE_REQUEST);
+        seedEngineer("Pradeep", EngineerLevel.SENIOR, group1);
+        seedEngineer("Selva", EngineerLevel.JUNIOR, group1);
+
+        // Group 2: NETWORK, PORTAL_WEBSITE, ACCESS
+        Set<IssueCategory> group2 = EnumSet.of(IssueCategory.NETWORK, IssueCategory.PORTAL_WEBSITE,
+                IssueCategory.ACCESS);
+        seedEngineer("Vikram", EngineerLevel.SENIOR, group2);
+        seedEngineer("Abi", EngineerLevel.JUNIOR, group2);
+
+        // Group 3: HARDWARE, SOFTWARE
+        Set<IssueCategory> group3 = EnumSet.of(IssueCategory.HARDWARE, IssueCategory.SOFTWARE);
+        seedEngineer("Priya", EngineerLevel.SENIOR, group3);
+        seedEngineer("Rohit", EngineerLevel.JUNIOR, group3);
+
+        // Required Faculty Users
+        seedFaculty("Rajesh");
+        seedFaculty("Rahul");
     }
 
-    private User createUser(String name, String email, String password, Role role) {
-        User user = new User();
+    private void seedSystemUser(String name, Role role) {
+        String email = name.toLowerCase().replace(" ", ".") + "@itsm.com";
+        User user = userRepository.findByEmail(email).orElse(new User());
         user.setName(name);
         user.setEmail(email);
-        user.setPassword(passwordEncoder.encode(password));
+        user.setPassword(passwordEncoder.encode("Welcome@123"));
         user.setRole(role);
-        return userRepository.save(user);
+        User saved = userRepository.save(user);
+        System.out.println("👤 System User Initialized: " + email);
+        auditService.logAction("USER_SEEDED", saved, null, "System user seeded: " + email, null, email);
+    }
+
+    private void seedEngineer(String name, EngineerLevel level, Set<IssueCategory> categories) {
+        String email = name.toLowerCase() + "@itsm.com";
+        User user = userRepository.findByEmail(email).orElse(new User());
+        user.setName(name);
+        user.setEmail(email);
+        user.setPassword(passwordEncoder.encode("Engineer@123"));
+        user.setRole(Role.ENGINEER);
+        user.setEngineerLevel(level);
+        user.setSpecializedCategories(categories);
+        User saved = userRepository.save(user);
+        System.out.println("🛠️ Engineer Initialized: " + email);
+        auditService.logAction("USER_SEEDED", saved, null, "Engineer seeded: " + email, null, email);
+    }
+
+    private void seedFaculty(String name) {
+        String email = name.toLowerCase() + "@itsm.com";
+        User user = userRepository.findByEmail(email).orElse(new User());
+        user.setName(name);
+        user.setEmail(email);
+        user.setPassword(passwordEncoder.encode("Faculty@123"));
+        user.setRole(Role.FACULTY);
+        User saved = userRepository.save(user);
+        System.out.println("🎓 Faculty Initialized: " + email);
+        auditService.logAction("USER_SEEDED", saved, null, "Faculty seeded: " + email, null, email);
     }
 
     private void initSLARules() {
-        if (slaRepository.count() > 0) return;
+        if (slaRepository.count() > 0)
+            return;
 
-        createSLARule("CRITICAL", 2);
         createSLARule("HIGH", 4);
-        createSLARule("MEDIUM", 8);
+        createSLARule("MEDIUM", 12);
         createSLARule("LOW", 24);
     }
 
@@ -76,56 +174,20 @@ public class DataInitializer implements CommandLineRunner {
     }
 
     private void initTickets() {
-        User admin = userRepository.findByEmail("admin@itsm.com").orElseThrow();
-        User engineer1 = userRepository.findByEmail("engineer@itsm.com").orElseThrow();
-        User engineer2 = userRepository.findByEmail("tech@itsm.com").orElseThrow();
-        User faculty = userRepository.findByEmail("faculty@itsm.com").orElseThrow();
-        User faculty2 = userRepository.findByEmail("prof@itsm.com").orElseThrow();
+        // Reference users
+        User selva = userRepository.findByEmail("selva@itsm.com").orElse(null);
+        User rajesh = userRepository.findByEmail("rajesh@itsm.com").orElse(null);
 
-        seedTicket("Lab Computer Not Starting", "Computer in lab 101 won't boot up",
-                IssueCategory.HARDWARE, TicketPriority.HIGH, "Lab 101",
-                faculty, TicketStatus.OPEN, null);
-
-        seedTicket("WiFi Speed Degradation", "Slow internet connection in reading room",
-                IssueCategory.NETWORK, TicketPriority.HIGH, "Reading Room",
-                faculty, TicketStatus.ASSIGNED, engineer2);
-
-        seedTicket("Printer Error Code E02", "Printer displaying error code E02",
-                IssueCategory.HARDWARE, TicketPriority.MEDIUM, "Admin Office",
-                faculty2, TicketStatus.IN_PROGRESS, engineer1);
-
-        seedTicket("Office 365 Login Issues", "Cannot access Office 365 applications",
-                IssueCategory.SOFTWARE, TicketPriority.HIGH, "Admin Block",
-                faculty, TicketStatus.ASSIGNED, engineer2);
-
-        seedTicket("Portal Login Failure", "Faculty portal showing 500 error on login",
-                IssueCategory.PORTAL_WEBSITE, TicketPriority.HIGH, "IT Server",
-                faculty2, TicketStatus.IN_PROGRESS, engineer1);
-
-        seedTicket("Power Outlet Damaged", "Socket in office sparking",
-                IssueCategory.INFRASTRUCTURE, TicketPriority.CRITICAL, "Office 205",
-                faculty, TicketStatus.RESOLVED, engineer2);
-
-        seedTicket("Monitor Resolution Low", "Monitor not displaying correct resolution",
-                IssueCategory.HARDWARE, TicketPriority.LOW, "Lab 204",
-                faculty2, TicketStatus.CLOSED, engineer1);
-
-        seedTicket("Software License Expired", "Adobe Creative Suite license expired",
-                IssueCategory.SOFTWARE, TicketPriority.MEDIUM, "Design Lab",
-                faculty, TicketStatus.RESOLVED, engineer2);
-
-        seedTicket("Attendance System Error", "Biometric device not syncing attendance",
-                IssueCategory.ATTENDANCE_SYSTEM, TicketPriority.HIGH, "Block C",
-                faculty2, TicketStatus.OPEN, null);
-
-        seedTicket("Database Slow Performance", "Database queries taking too long",
-                IssueCategory.SOFTWARE, TicketPriority.HIGH, "Server Room",
-                faculty, TicketStatus.IN_PROGRESS, engineer1);
+        if (selva != null && rajesh != null) {
+            seedTicket("Office Power Outage", "Socket in office 205 is sparking",
+                    IssueCategory.INFRASTRUCTURE, TicketPriority.CRITICAL, "Office 205",
+                    rajesh, TicketStatus.ASSIGNED, selva);
+        }
     }
 
     private void seedTicket(String title, String description, IssueCategory category,
-                            TicketPriority priority, String location, User creator,
-                            TicketStatus status, User assignedTo) {
+            TicketPriority priority, String location, User creator,
+            TicketStatus status, User assignedTo) {
 
         Ticket ticket = new Ticket();
         ticket.setTitle(title);
@@ -146,24 +208,12 @@ public class DataInitializer implements CommandLineRunner {
 
         Ticket saved = ticketRepository.save(ticket);
 
-        AuditLog log = AuditLog.builder()
-                .action("TICKET_CREATED")
-                .ticket(saved)
-                .user(creator)
-                .details("Ticket created: " + title)
-                .createdAt(LocalDateTime.now())
-                .build();
-        auditLogRepository.save(log);
+        auditService.logAction("TICKET_CREATED", creator, saved.getId(), 
+            "Ticket created: " + title, null, status.name());
 
         if (assignedTo != null) {
-            AuditLog assignLog = AuditLog.builder()
-                    .action("TICKET_ASSIGNED")
-                    .ticket(saved)
-                    .user(assignedTo)
-                    .details("Assigned to " + assignedTo.getName())
-                    .createdAt(LocalDateTime.now())
-                    .build();
-            auditLogRepository.save(assignLog);
+            auditService.logAction("TICKET_ASSIGNED", assignedTo, saved.getId(), 
+                "Assigned to " + assignedTo.getName(), null, assignedTo.getName());
         }
     }
 
@@ -171,11 +221,12 @@ public class DataInitializer implements CommandLineRunner {
         System.out.println("\n╔════════════════════════════════════════════════════════════╗");
         System.out.println("║         ✅ ITSM SYSTEM STARTED SUCCESSFULLY ✅             ║");
         System.out.println("╚════════════════════════════════════════════════════════════╝");
-        System.out.println("\n📊 DEMO DATA: 5 Users | 10 Tickets | 4 SLA Rules");
-        System.out.println("\n🔐 LOGIN CREDENTIALS:");
-        System.out.println("   ADMIN:    admin@itsm.com    / admin123");
-        System.out.println("   ENGINEER: engineer@itsm.com / eng123");
-        System.out.println("   FACULTY:  faculty@itsm.com  / faculty123");
+        System.out.println("\n📊 SYSTEM READY: Users and Structures Initialized.");
+        System.out.println("\n🔐 DYNAMIC CREDENTIALS (Email pattern: name@itsm.com):");
+        System.out.println("   ADMIN:        system.admin@itsm.com (Welcome@123)");
+        System.out.println("   FACULTY:      rajesh@itsm.com       (Faculty@123)");
+        System.out.println("   JR ENGINEER:  selva@itsm.com        (Engineer@123)");
+        System.out.println("   SR ENGINEER:  pradeep@itsm.com      (Engineer@123)");
         System.out.println("\n📍 Access at: http://localhost:8080\n");
     }
 }

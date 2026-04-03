@@ -1,20 +1,16 @@
 // ========================================
-// ITSM SYSTEM - FRONTEND ONLY
+// ITSM SYSTEM - Shared App Logic
 // Spring Boot Backend Integration
 // ========================================
 
-// API Configuration
 const API_URL = '/api';
 const TOKEN_KEY = 'itsm_token';
 const USER_KEY = 'itsm_user';
 
 // ========================================
-// UTILITY FUNCTIONS
+// AUTH UTILITIES
 // ========================================
 
-/**
- * Get authorization headers with JWT token
- */
 function getAuthHeaders() {
     const token = localStorage.getItem(TOKEN_KEY);
     return {
@@ -24,57 +20,79 @@ function getAuthHeaders() {
 }
 
 /**
- * Get current logged-in user from localStorage
+ * Shared API fetch utility that handles auth headers and JSON response.
+ * @param {string} endpoint - API endpoint starting with /
+ * @param {object} options - fetch options
  */
+async function apiFetch(endpoint, options = {}) {
+    const url = endpoint.startsWith('http') ? endpoint : endpoint;
+    const defaultOptions = {
+        headers: getAuthHeaders()
+    };
+    const mergedOptions = { ...defaultOptions, ...options };
+    if (options.body && typeof options.body === 'object') {
+        mergedOptions.body = JSON.stringify(options.body);
+    }
+
+    try {
+        const response = await fetch(mergedOptions.url || url, mergedOptions);
+        if (response.status === 401 || response.status === 403) {
+            logout();
+            return { success: false, message: 'Session expired' };
+        }
+        const data = await response.json().catch(() => ({}));
+        return {
+            success: response.ok,
+            status: response.status,
+            data: data.data || data,
+            message: data.message || (response.ok ? 'Success' : 'API Error')
+        };
+    } catch (error) {
+        console.error('API Error:', error);
+        return { success: false, message: 'Connection error' };
+    }
+}
+
+/**
+ * Legacy wrapper for fetch with auth
+ */
+async function fetchWithAuth(url, options = {}) {
+    return apiFetch(url, options);
+}
+
 function getCurrentUser() {
     const userJson = localStorage.getItem(USER_KEY);
     return userJson ? JSON.parse(userJson) : null;
 }
 
-/**
- * Check if user is authenticated
- */
 function checkAuth() {
     const token = localStorage.getItem(TOKEN_KEY);
     const currentPage = window.location.pathname;
-
-    console.log('Checking auth - Current page:', currentPage);
-    console.log('Token exists:', !!token);
-
-    // Allow access to login page
     if (currentPage.includes('index.html') || currentPage === '/') {
-        console.log('Login page - access allowed');
         return true;
     }
-
-    // Redirect to login if no token
     if (!token) {
-        console.log('No token found - redirecting to login');
         window.location.href = '/index.html';
         return false;
     }
-
-    console.log('Token found - access allowed');
     return true;
 }
 
-/**
- * Redirect to appropriate dashboard based on role
- */
 function redirectToDashboard(role) {
     if (role === 'ADMIN') {
         window.location.href = '/admin-dashboard.html';
+    } else if (role === 'SERVICE_DESK') {
+        window.location.href = '/service-desk-dashboard.html';
     } else if (role === 'ENGINEER' || role === 'SUPPORT_ENGINEER') {
         window.location.href = '/engineer-dashboard.html';
-    } else if (role === 'FACULTY') {
-        window.location.href = '/faculty-dashboard.html';
     } else {
         window.location.href = '/faculty-dashboard.html';
     }
 }
 
 /**
- * Logout user
+ * Consistent logout across all portals.
+ * Clears all stored auth data and redirects to login.
  */
 function logout() {
     localStorage.removeItem(TOKEN_KEY);
@@ -82,9 +100,6 @@ function logout() {
     window.location.href = '/index.html';
 }
 
-/**
- * Go back to dashboard
- */
 function goToDashboard() {
     const user = getCurrentUser();
     if (user) {
@@ -98,9 +113,6 @@ function goToDashboard() {
 // AUTHENTICATION API CALLS
 // ========================================
 
-/**
- * Handle user login
- */
 async function handleLogin(email, password) {
     try {
         const response = await fetch(`${API_URL}/auth/login`, {
@@ -111,17 +123,11 @@ async function handleLogin(email, password) {
 
         if (response.ok) {
             const apiResponse = await response.json();
-            console.log('Login response:', apiResponse);
-            
-            const data = apiResponse.data; // Extract the data object from API response
-            
+            const data = apiResponse.data;
             if (!data || !data.token) {
-                console.error('Invalid response data:', data);
                 showError('Invalid server response. Please try again.');
                 return false;
             }
-
-            // Store token and user info
             localStorage.setItem(TOKEN_KEY, data.token);
             localStorage.setItem(USER_KEY, JSON.stringify({
                 id: data.userId,
@@ -129,16 +135,9 @@ async function handleLogin(email, password) {
                 name: data.name,
                 role: data.role
             }));
-
-            console.log('Token stored:', data.token.substring(0, 20) + '...');
-            console.log('User stored:', data.email, '- Role:', data.role);
-
-            // Redirect based on role
             redirectToDashboard(data.role);
             return true;
         } else {
-            const errorData = await response.json().catch(() => ({}));
-            console.error('Login failed:', response.status, errorData);
             showError('Invalid email or password');
             return false;
         }
@@ -149,22 +148,18 @@ async function handleLogin(email, password) {
     }
 }
 
-/**
- * Load user info into page
- */
 function loadUserInfo() {
     const user = getCurrentUser();
     if (user) {
-        // Update user name displays
-        const userNameElements = document.querySelectorAll('#userName, .user-name');
-        userNameElements.forEach(el => {
+        document.querySelectorAll('#userName, .user-name').forEach(el => {
             if (el) el.textContent = user.name;
         });
-
-        // Update user email displays
-        const userEmailElements = document.querySelectorAll('#userEmail, .user-email');
-        userEmailElements.forEach(el => {
+        document.querySelectorAll('#userEmail, .user-email').forEach(el => {
             if (el) el.textContent = user.email;
+        });
+        // Set avatar initials
+        document.querySelectorAll('.user-avatar-initial').forEach(el => {
+            if (el) el.textContent = user.name ? user.name.charAt(0).toUpperCase() : '?';
         });
     }
 }
@@ -174,26 +169,39 @@ function loadUserInfo() {
 // ========================================
 
 /**
- * Fetch all tickets from backend (role-based filtering)
+ * Fetch tickets for the current user role:
+ * ADMIN  → all tickets (paged, first page)
+ * ENGINEER → assigned to me
+ * FACULTY / others → created by me
  */
 async function loadTickets() {
     try {
-        const response = await fetch(`${API_URL}/tickets`, {
-            headers: getAuthHeaders()
-        });
+        const user = getCurrentUser();
+        let url;
+        if (user && user.role === 'ADMIN') {
+            // Admin sees all tickets
+            url = `${API_URL}/tickets/all?size=200`;
+        } else {
+            // Engineer / Faculty sees their own
+            url = `${API_URL}/tickets/my`;
+        }
+
+        const response = await fetch(url, { headers: getAuthHeaders() });
 
         if (response.status === 401 || response.status === 403) {
             logout();
             return [];
         }
-
         if (response.ok) {
-            const tickets = await response.json();
-            return tickets;
-        } else {
-            console.error('Failed to load tickets');
+            const result = await response.json();
+            // /all returns a paged object; /my returns a list
+            const data = result.data;
+            if (Array.isArray(data)) return data;
+            if (data && Array.isArray(data.content)) return data.content;
             return [];
         }
+        console.error('Failed to load tickets:', response.status);
+        return [];
     } catch (error) {
         console.error('Error loading tickets:', error);
         return [];
@@ -201,26 +209,53 @@ async function loadTickets() {
 }
 
 /**
- * Fetch single ticket by ID
+ * Fetch ALL tickets (admin only), returns a flat array.
+ */
+async function fetchAllTickets() {
+    try {
+        const response = await fetch(`${API_URL}/tickets/all?size=200`, {
+            headers: getAuthHeaders()
+        });
+        if (response.status === 401 || response.status === 403) {
+            logout();
+            return [];
+        }
+        if (response.ok) {
+            const result = await response.json();
+            const data = result.data;
+            if (Array.isArray(data)) return data;
+            if (data && Array.isArray(data.content)) return data.content;
+            return [];
+        }
+        return [];
+    } catch (error) {
+        console.error('Error fetching all tickets:', error);
+        return [];
+    }
+}
+
+/**
+ * Fetch single ticket by ID.
  */
 async function loadTicketDetails(ticketId) {
     try {
         const response = await fetch(`${API_URL}/tickets/${ticketId}`, {
             headers: getAuthHeaders()
         });
-
         if (response.ok) {
-            const ticket = await response.json();
-            return ticket;
+            const result = await response.json();
+            return result.data || result;
         }
     } catch (error) {
         console.error('Error loading ticket:', error);
         showError('Failed to load ticket details');
     }
+    return null;
 }
 
 /**
- * Create new ticket
+ * Create new ticket (Faculty / Admin).
+ * @param {object} formData - { title, description, category, priority, location }
  */
 async function createTicket(formData) {
     try {
@@ -229,13 +264,13 @@ async function createTicket(formData) {
             headers: getAuthHeaders(),
             body: JSON.stringify(formData)
         });
-
         if (response.ok) {
-            const ticket = await response.json();
+            const result = await response.json();
             showSuccess('Ticket created successfully!');
-            return ticket;
+            return result.data || result;
         } else {
-            showError('Failed to create ticket');
+            const err = await response.json().catch(() => ({}));
+            showError(err.message || 'Failed to create ticket');
             return null;
         }
     } catch (error) {
@@ -246,23 +281,23 @@ async function createTicket(formData) {
 }
 
 /**
- * Assign ticket to engineer (Admin only)
+ * Assign ticket to engineer (Admin only).
+ * Sends PUT /api/tickets/{id}/assign with body { engineerId }
  */
 async function assignTicket(ticketId, engineerId) {
     try {
-        const response = await fetch(
-            `${API_URL}/tickets/${ticketId}/assign/${engineerId}`,
-            {
-                method: 'POST',
-                headers: getAuthHeaders()
-            }
-        );
-
+        const response = await fetch(`${API_URL}/tickets/${ticketId}/assign`, {
+            method: 'PUT',
+            headers: getAuthHeaders(),
+            body: JSON.stringify({ engineerId: parseInt(engineerId) })
+        });
         if (response.ok) {
+            const result = await response.json();
             showSuccess('Ticket assigned successfully!');
-            return await response.json();
+            return result.data || result;
         } else {
-            showError('Failed to assign ticket');
+            const err = await response.json().catch(() => ({}));
+            showError(err.message || 'Failed to assign ticket');
             return null;
         }
     } catch (error) {
@@ -273,27 +308,50 @@ async function assignTicket(ticketId, engineerId) {
 }
 
 /**
- * Resolve ticket (Engineer only)
+ * Start progress on a ticket (Engineer only).
  */
-async function resolveTicket(ticketId, notes) {
+async function startProgress(ticketId) {
     try {
-        const user = getCurrentUser();
-        const url = new URL(`${API_URL}/tickets/${ticketId}/resolve`, window.location.origin);
-        url.searchParams.append('userRole', user.role);
-        url.searchParams.append('agentName', user.name);
-        url.searchParams.append('agentEmail', user.email);
-
-        const response = await fetch(url.toString(), {
+        const response = await fetch(`${API_URL}/tickets/${ticketId}/start`, {
             method: 'PUT',
             headers: getAuthHeaders()
         });
-
         if (response.ok) {
-            showSuccess('Ticket resolved successfully!');
-            return await response.json();
+            const result = await response.json();
+            showSuccess('Ticket moved to In Progress!');
+            return result.data || result;
         } else {
-            const error = await response.text();
-            showError(error || 'Failed to resolve ticket');
+            const err = await response.json().catch(() => ({}));
+            showError(err.message || 'Failed to start progress');
+            return null;
+        }
+    } catch (error) {
+        console.error('Error starting progress:', error);
+        showError('Connection error');
+        return null;
+    }
+}
+
+/**
+ * Resolve ticket (Engineer / Admin).
+ * @param {string|number} ticketId
+ * @param {string} [notes] - optional resolution notes
+ */
+async function resolveTicket(ticketId, notes) {
+    try {
+        const body = notes ? JSON.stringify({ resolutionNotes: notes }) : null;
+        const response = await fetch(`${API_URL}/tickets/${ticketId}/resolve`, {
+            method: 'PUT',
+            headers: getAuthHeaders(),
+            body: body
+        });
+        if (response.ok) {
+            const result = await response.json();
+            showSuccess('Ticket resolved successfully!');
+            return result.data || result;
+        } else {
+            const err = await response.json().catch(() => ({}));
+            showError(err.message || 'Failed to resolve ticket');
             return null;
         }
     } catch (error) {
@@ -304,29 +362,21 @@ async function resolveTicket(ticketId, notes) {
 }
 
 /**
- * Close ticket (Faculty only)
+ * Close ticket (Faculty / Admin).
  */
 async function closeTicket(ticketId) {
-    if (!confirm('Are you sure you want to close this ticket?')) return null;
-
     try {
-        const user = getCurrentUser();
-        const url = new URL(`${API_URL}/tickets/${ticketId}/close`, window.location.origin);
-        url.searchParams.append('userRole', user.role);
-        url.searchParams.append('agentName', user.name);
-        url.searchParams.append('agentEmail', user.email);
-
-        const response = await fetch(url.toString(), {
+        const response = await fetch(`${API_URL}/tickets/${ticketId}/close`, {
             method: 'PUT',
             headers: getAuthHeaders()
         });
-
         if (response.ok) {
+            const result = await response.json();
             showSuccess('Ticket closed successfully!');
-            return await response.json();
+            return result.data || result;
         } else {
-            const error = await response.text();
-            showError(error || 'Failed to close ticket');
+            const err = await response.json().catch(() => ({}));
+            showError(err.message || 'Failed to close ticket');
             return null;
         }
     } catch (error) {
@@ -337,163 +387,332 @@ async function closeTicket(ticketId) {
 }
 
 /**
- * Update ticket status
+ * Fetch audit log entries for a specific ticket.
  */
-async function updateTicketStatus(ticketId, status) {
+async function fetchTicketAuditLogs(ticketId) {
     try {
-        const user = getCurrentUser();
-        const url = new URL(`${API_URL}/tickets/${ticketId}/status`, window.location.origin);
-        url.searchParams.append('status', status);
-        url.searchParams.append('userRole', user.role);
-
-        const response = await fetch(url.toString(), {
-            method: 'PUT',
+        const response = await fetch(`${API_URL}/tickets/${ticketId}/audit`, {
             headers: getAuthHeaders()
         });
-
         if (response.ok) {
-            showSuccess(`Status updated to ${status}`);
-            return await response.json();
+            const result = await response.json();
+            return result.data || [];
+        }
+    } catch (error) {
+        console.error('Error fetching audit logs:', error);
+    }
+    return [];
+}
+
+/**
+ * Fetch comments for a specific ticket.
+ */
+async function fetchTicketComments(ticketId) {
+    try {
+        const response = await fetch(`${API_URL}/tickets/${ticketId}/comments`, {
+            headers: getAuthHeaders()
+        });
+        if (response.ok) {
+            const result = await response.json();
+            return result.data || [];
+        }
+    } catch (error) {
+        console.error('Error fetching comments:', error);
+    }
+    return [];
+}
+
+/**
+ * Post comment (Faculty only).
+ */
+async function postTicketComment(ticketId, content) {
+    try {
+        const response = await fetch(`${API_URL}/tickets/${ticketId}/comments`, {
+            method: 'POST',
+            headers: getAuthHeaders(),
+            body: JSON.stringify({ content })
+        });
+        if (response.ok) {
+            const result = await response.json();
+            return result.data || result;
         } else {
-            const error = await response.text();
-            showError(error || 'Failed to update status');
+            const err = await response.json().catch(() => ({}));
+            showError(err.message || 'Failed to post comment');
             return null;
         }
     } catch (error) {
-        console.error('Error updating status:', error);
+        console.error('Error posting comment:', error);
         showError('Connection error');
         return null;
     }
 }
 
-// ========================================
-// STATS API CALLS
-// ========================================
+/**
+ * Fetch all audit logs (Admin only).
+ */
+async function fetchAllAuditLogs() {
+    try {
+        const response = await fetch(`${API_URL}/audit-logs`, {
+            headers: getAuthHeaders()
+        });
+        if (response.ok) {
+            const result = await response.json();
+            return result.data || [];
+        }
+    } catch (error) {
+        console.error('Error fetching all audit logs:', error);
+    }
+    return [];
+}
 
 /**
- * Load dashboard statistics
+ * Fetch recent audit logs (Admin dashboard activity feed).
+ */
+async function fetchRecentAuditLogs() {
+    try {
+        const response = await fetch(`${API_URL}/audit-logs/recent`, {
+            headers: getAuthHeaders()
+        });
+        if (response.ok) {
+            const result = await response.json();
+            return result.data || [];
+        }
+    } catch (error) {
+        console.error('Error fetching recent audit logs:', error);
+    }
+    return [];
+}
+
+/**
+ * Update SLA rule (Admin only).
+ */
+async function updateSLARule(priority, maxHours) {
+    try {
+        const response = await apiFetch(`${API_URL}/sla-rules/${priority.toUpperCase()}`, {
+            method: 'PUT',
+            body: { maxHours: parseInt(maxHours) }
+        });
+        if (response.success) {
+            return response.data;
+        } else {
+            showError(response.message || 'Failed to update SLA rule');
+            return null;
+        }
+    } catch (error) {
+        console.error('Error updating SLA rule:', error);
+        return null;
+    }
+}
+
+/**
+ * Fetch list of engineers (Admin only).
+ */
+async function fetchEngineers() {
+    try {
+        const response = await fetch(`${API_URL}/tickets/engineers`, {
+            headers: getAuthHeaders()
+        });
+        if (response.ok) {
+            const result = await response.json();
+            return result.data || [];
+        }
+    } catch (error) {
+        console.error('Error fetching engineers:', error);
+    }
+    return [];
+}
+
+/**
+ * Load dashboard statistics from the backend.
  */
 async function loadStats() {
     try {
-        const tickets = await loadTickets();
-        
-        const stats = {
-            total: tickets.length,
-            open: tickets.filter(t => t.status === 'OPEN').length,
-            assigned: tickets.filter(t => t.status === 'ASSIGNED').length,
-            inProgress: tickets.filter(t => t.status === 'IN_PROGRESS').length,
-            resolved: tickets.filter(t => t.status === 'RESOLVED').length,
-            closed: tickets.filter(t => t.status === 'CLOSED').length
-        };
-
-        updateStatsDisplay(stats);
-        return stats;
+        const response = await fetch(`${API_URL}/tickets/dashboard/stats`, {
+            headers: getAuthHeaders()
+        });
+        if (response.ok) {
+            const result = await response.json();
+            const stats = result.data || {};
+            updateStatsDisplay(stats);
+            return stats;
+        }
     } catch (error) {
         console.error('Error loading stats:', error);
     }
 }
 
 /**
- * Update stats display on page
+ * Update stats display elements by ID.
  */
 function updateStatsDisplay(stats) {
     const elements = {
-        'totalTickets': stats.total,
-        'openTickets': stats.open,
-        'assignedTickets': stats.assigned,
-        'inProgressTickets': stats.inProgress,
-        'resolvedTickets': stats.resolved,
-        'closedTickets': stats.closed,
-        'breachedTickets': stats.breached || 0,
-        'unassignedTickets': stats.open,
-        'activeTickets': stats.total - stats.closed,
-        'resolvedTodayCount': stats.resolved,
-        'assignedCount': stats.assigned + stats.inProgress,
-        'inProgressCount': stats.inProgress
+        'totalTickets': stats.totalTickets,
+        'openTickets': stats.openTickets,
+        'assignedTickets': stats.assignedTickets,
+        'inProgressTickets': stats.inProgressTickets,
+        'resolvedTickets': stats.resolvedTickets,
+        'closedTickets': stats.closedTickets,
+        'breachedTickets': stats.breachedTickets || 0,
+        'unassignedTickets': stats.openTickets || 0,
+        'totalTicketsCount': stats.totalTickets,
+        'openTicketsCount': stats.openTickets,
+        'resolvedTicketsCount': (stats.resolvedTickets || 0) + (stats.closedTickets || 0),
+        'assignedCount': (stats.assignedTickets || 0) + (stats.inProgressTickets || 0),
+        'inProgressCount': stats.inProgressTickets,
+        'resolvedTodayCount': stats.resolvedTickets
     };
-
     for (const [id, value] of Object.entries(elements)) {
-        const element = document.getElementById(id);
-        if (element) {
-            element.textContent = value;
+        const el = document.getElementById(id);
+        if (el && value !== undefined && value !== null) {
+            el.textContent = value;
         }
     }
 }
 
 // ========================================
-// UI HELPER FUNCTIONS
+// UI HELPERS
 // ========================================
 
-/**
- * Show success message
- */
 function showSuccess(message) {
-    // Try to use existing notification system
-    if (typeof showNotification === 'function') {
-        showNotification(message, 'success');
-    } else {
-        alert(message);
-    }
+    showNotificationBanner(message, 'success');
 }
 
-/**
- * Show error message
- */
 function showError(message) {
-    // Try to use existing notification system
-    if (typeof showNotification === 'function') {
-        showNotification(message, 'error');
-    } else {
-        alert(message);
-    }
+    showNotificationBanner(message, 'error');
 }
 
-/**
- * Format date for display
- */
+function showNotificationBanner(message, type) {
+    // Remove existing banners
+    const existing = document.getElementById('itsm-notification');
+    if (existing) existing.remove();
+
+    const banner = document.createElement('div');
+    banner.id = 'itsm-notification';
+    banner.style.cssText = `
+        position: fixed; top: 20px; right: 20px; z-index: 9999;
+        padding: 14px 20px; border-radius: 10px; 
+        font-family: Inter, sans-serif; font-size: 14px; font-weight: 500;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+        display: flex; align-items: center; gap: 10px;
+        animation: slideInRight 0.3s ease; max-width: 360px;
+    `;
+    if (type === 'success') {
+        banner.style.background = '#ecfdf5';
+        banner.style.color = '#065f46';
+        banner.style.border = '1px solid #6ee7b7';
+        banner.innerHTML = '<span style="font-size:18px">✅</span>' + message;
+    } else {
+        banner.style.background = '#fef2f2';
+        banner.style.color = '#991b1b';
+        banner.style.border = '1px solid #fca5a5';
+        banner.innerHTML = '<span style="font-size:18px">❌</span>' + message;
+    }
+    document.body.appendChild(banner);
+    setTimeout(() => { if (banner.parentNode) banner.remove(); }, 4000);
+}
+
 function formatDate(dateString) {
     if (!dateString) return 'N/A';
     const date = new Date(dateString);
     return date.toLocaleString('en-US', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
+        year: 'numeric', month: 'short', day: 'numeric',
+        hour: '2-digit', minute: '2-digit'
     });
 }
 
-/**
- * View ticket details
- */
+function formatDateShort(dateString) {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    const month = date.toLocaleString('en-US', { month: 'short' });
+    const day = date.getDate();
+    const time = date.toLocaleString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+    return `${month} ${day}, ${time}`;
+}
+
+function formatRelativeTime(dateString) {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    const now = new Date();
+    const diff = now - date;
+    const minutes = Math.floor(diff / 60000);
+    const hours = Math.floor(diff / 3600000);
+    const days = Math.floor(diff / 86400000);
+    if (minutes < 1) return 'just now';
+    if (minutes < 60) return `${minutes} min${minutes > 1 ? 's' : ''} ago`;
+    if (hours < 24) return `${hours} hour${hours > 1 ? 's' : ''} ago`;
+    return `${days} day${days > 1 ? 's' : ''} ago`;
+}
+
+function getPriorityColor(priority) {
+    switch (priority) {
+        case 'HIGH': case 'CRITICAL': return 'bg-red-100 text-red-800';
+        case 'MEDIUM': return 'bg-yellow-100 text-yellow-800';
+        case 'LOW': return 'bg-green-100 text-green-800';
+        default: return 'bg-slate-100 text-slate-800';
+    }
+}
+
+function getStatusColor(status) {
+    switch (status) {
+        case 'OPEN': return 'status-open';
+        case 'ASSIGNED': return 'status-assigned';
+        case 'IN_PROGRESS': return 'status-in-progress';
+        case 'RESOLVED': return 'status-resolved';
+        case 'CLOSED': return 'status-closed';
+        case 'SLA_BREACHED': return 'status-breached';
+        default: return 'status-closed';
+    }
+}
+
+function getActionIcon(action) {
+    switch (action) {
+        case 'TICKET_CREATED': return { icon: 'add_circle', color: 'bg-blue-100 text-blue-600' };
+        case 'TICKET_ASSIGNED': return { icon: 'person_add', color: 'bg-orange-100 text-orange-600' };
+        case 'TICKET_REASSIGNED': return { icon: 'manage_accounts', color: 'bg-yellow-100 text-yellow-600' };
+        case 'TICKET_STARTED': return { icon: 'sync', color: 'bg-purple-100 text-purple-600' };
+        case 'TICKET_RESOLVED': return { icon: 'check_circle', color: 'bg-green-100 text-green-600' };
+        case 'TICKET_CLOSED': return { icon: 'lock', color: 'bg-slate-100 text-slate-600' };
+        case 'SLA_BREACHED': return { icon: 'error', color: 'bg-red-100 text-red-600' };
+        default: return { icon: 'info', color: 'bg-slate-100 text-slate-600' };
+    }
+}
+
 function viewTicket(ticketId) {
     window.location.href = `ticket-details.html?id=${ticketId}`;
 }
 
 /**
- * Show resolve modal
+ * Show resolve modal from anywhere by injecting or triggering a modal.
+ * Note: If the page already implements a resolveModal (like engineer-dashboard), 
+ * it will use that. Otherwise, injects a shared one.
  */
 function showResolveModal(ticketId) {
-    const notes = prompt('Enter resolution notes:');
-    if (notes) {
-        resolveTicket(ticketId, notes).then(ticket => {
-            if (ticket) {
-                // Reload current page data
-                if (typeof loadTicketDetails === 'function') {
-                    loadTicketDetails(ticketId);
-                } else {
-                    location.reload();
-                }
-            }
-        });
+    if (document.getElementById('resolveModal')) {
+        // use local
+        if (typeof handleResolve === 'function') {
+            handleResolve(ticketId);
+        } else if (typeof handleResolveFromHeader === 'function') {
+            // we'd need to mock the URL params for header but ticketId is passed
+            // For now just route it properly if handleResolve is missing
+            const oldUrl = window.history.replaceState(null, null, `?id=${ticketId}`);
+            handleResolveFromHeader();
+        }
+        return;
     }
+
+    // Inject fallback logic if needed
+    const notes = prompt('Enter resolution notes (optional):');
+    if (notes === null) return;
+    resolveTicket(ticketId, notes).then(ticket => {
+        if (ticket) {
+            location.reload();
+        }
+    });
 }
 
 // ========================================
-// PAGE INITIALIZATION
+// PAGE INIT
 // ========================================
-
-// Check authentication on page load
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     checkAuth();
 });

@@ -4,6 +4,5 @@ public enum Role {
     ADMIN,
     ENGINEER,
     FACULTY,
-    SUPPORT_ENGINEER,
-    STUDENT
+    SERVICE_DESK
 }

@@ -2,7 +2,10 @@ package com.itsm.itsmsystem.Controller;
 
 import com.itsm.itsmsystem.dto.ApiResponse;
 import com.itsm.itsmsystem.model.entity.SLARule;
+import com.itsm.itsmsystem.model.entity.User;
+import com.itsm.itsmsystem.security.JwtUtil;
 import com.itsm.itsmsystem.service.SLAService;
+import com.itsm.itsmsystem.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -18,6 +21,8 @@ import java.util.Map;
 public class SLAController {
 
     private final SLAService slaService;
+    private final UserService userService;
+    private final JwtUtil jwtUtil;
 
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
@@ -35,7 +40,8 @@ public class SLAController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<SLARule>> updateSLARule(
             @PathVariable String priority,
-            @RequestBody Map<String, Integer> body) {
+            @RequestBody Map<String, Integer> body,
+            @RequestHeader("Authorization") String authHeader) {
 
         Integer maxHours = body.get("maxHours");
         if (maxHours == null) {
@@ -43,7 +49,10 @@ public class SLAController {
                     .body(new ApiResponse<>(false, "maxHours is required"));
         }
 
-        SLARule updated = slaService.updateSLARule(priority.toUpperCase(), maxHours);
+        String email = jwtUtil.extractEmail(authHeader.substring(7));
+        User admin = userService.getUserByEmail(email);
+
+        SLARule updated = slaService.updateSLARule(priority.toUpperCase(), maxHours, admin);
         return ResponseEntity.ok(new ApiResponse<>(true, "SLA rule updated", updated));
     }
 }
