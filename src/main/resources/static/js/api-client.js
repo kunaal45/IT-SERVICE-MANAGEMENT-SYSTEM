@@ -7,7 +7,12 @@
 
 class ITSMClient {
     constructor() {
-        this.baseURL = 'http://localhost:8080/api';
+        // Automatically detect if running locally or on Vercel
+        const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+        
+        // IMPORTANT: Replace 'YOUR-KOYEB-URL' below with the actual URL Koyeb gives you!
+        this.baseURL = isLocal ? 'http://localhost:8080/api' : 'https://YOUR-KOYEB-URL.koyeb.app/api';
+        
         this.token = localStorage.getItem('jwt_token');
     }
 
