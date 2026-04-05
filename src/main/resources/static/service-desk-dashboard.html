@@ -4,51 +4,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Service Desk Dashboard - ITSM System</title>
+    <title>Service Desk Dashboard - ITSM</title>
+    <meta name="description" content="ITSM Service Desk Dashboard – monitor all system tickets, manage SLAs and triage support requests." />
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%234a90d9'/%3E%3Ccircle cx='32' cy='26' r='16' fill='rgba(255,255,255,0.18)'/%3E%3Ccircle cx='32' cy='26' r='7' fill='rgba(255,255,255,0.28)'/%3E%3Ctext x='32' y='53' font-family='Arial,sans-serif' font-weight='900' font-size='13' fill='white' text-anchor='middle'%3EITSMS%3C/text%3E%3C/svg%3E">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#00d4ff",
+                        "background-light": "#0c1220",
+                    },
+                    fontFamily: { "display": ["Inter", "sans-serif"] },
+                },
+            },
+        }
+    </script>
     <link rel="stylesheet" href="css/custom.css">
+    <link rel="stylesheet" href="css/theme.css">
     <style>
-        body {
-            font-family: 'Inter', sans-serif;
-        }
-
-        .sidebar-link {
-            transition: all 0.2s;
-        }
-
-        .sidebar-link:hover {
-            background-color: rgba(19, 127, 236, 0.1);
-        }
-
-        .sidebar-link.active {
-            background-color: #137fec;
-            color: white;
-        }
-
-        .glass-card {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-        }
-
-        .breach-alert {
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0% {
-                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4);
-            }
-
-            70% {
-                box-shadow: 0 0 0 10px rgba(239, 68, 68, 0);
-            }
-
-            100% {
-                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
-            }
-        }
+        body { font-family: 'Inter', sans-serif; }
     </style>
 </head>
 
@@ -59,14 +38,14 @@
 
         <!-- Sidebar -->
         <aside class="w-64 bg-white border-r border-slate-200 flex flex-col">
-            <div class="p-6 border-b border-slate-200">
+            <div class="p-5 border-b border-slate-200">
                 <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
-                        <span class="material-icons text-white text-2xl">support_agent</span>
+                    <div class="w-10 h-10 bg-primary rounded-lg flex items-center justify-center" style="background:linear-gradient(135deg,#00d4ff,#0077aa)!important;box-shadow:0 4px 12px rgba(0,212,255,0.3)">
+                        <span class="material-icons" style="color:#000d1a;font-size:20px">support_agent</span>
                     </div>
                     <div>
-                        <h1 class="text-lg font-bold text-slate-800">ITSM</h1>
-                        <p class="text-xs text-slate-500">Service Desk</p>
+                        <div style="font-size:16px;font-weight:800;color:#e2e8f0;letter-spacing:0.5px">ITSM</div>
+                        <div style="font-size:10px;color:#3d5166;letter-spacing:1.5px;text-transform:uppercase">Service Desk</div>
                     </div>
                 </div>
             </div>
@@ -80,12 +59,8 @@
                 <!-- Removed All Tickets and SLA Reports as per request -->
             </nav>
 
-            <div class="p-4 border-t border-slate-200 space-y-2">
-                <button onclick="logout()"
-                    class="w-full sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50">
-                    <span class="material-icons text-xl">logout</span>
-                    <span>Logout</span>
-                </button>
+            <div class="p-4 border-t border-slate-200">
+                <div style="font-size:10px;color:#3d5166;text-align:center;padding:8px 0;letter-spacing:0.5px">IT Service Management System</div>
             </div>
         </aside>
 
@@ -96,8 +71,8 @@
             <header class="bg-white border-b border-slate-200 px-8 py-4">
                 <div class="flex items-center justify-between">
                     <div>
-                        <h2 class="text-2xl font-bold text-slate-800">Support Overview</h2>
-                        <p class="text-sm text-slate-500">Monitor all system tickets and manage SLAs</p>
+                        <h2 class="text-2xl font-bold text-slate-800">Service Desk Dashboard</h2>
+                        <p class="text-sm text-slate-500">Monitor all tickets, manage SLAs &amp; triage support requests</p>
                     </div>
                     <div class="flex items-center gap-4">
                         <!-- Profile Dropdown -->
@@ -117,11 +92,6 @@
                             <div id="profileMenu"
                                 class="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-slate-100 overflow-hidden hidden">
                                 <div class="p-2">
-                                    <a href="#"
-                                        class="flex items-center gap-2 px-3 py-2 text-sm text-slate-600 hover:bg-slate-50 rounded-lg">
-                                        <span class="material-icons text-lg">person</span> Profile
-                                    </a>
-                                    <div class="h-px bg-slate-100 my-1"></div>
                                     <button onclick="logout()"
                                         class="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg">
                                         <span class="material-icons text-lg">logout</span> Logout
@@ -232,6 +202,19 @@
             document.getElementById('userName').textContent = user.name;
             await refreshData();
         });
+
+        // Close profile menu on outside click
+        document.addEventListener('click', function (e) {
+            const menu = document.getElementById('profileMenu');
+            const btn = document.getElementById('profileBtn');
+            if (menu && !menu.contains(e.target) && btn && !btn.contains(e.target)) {
+                menu.classList.add('hidden');
+            }
+        });
+
+        function toggleProfileMenu() {
+            document.getElementById('profileMenu').classList.toggle('hidden');
+        }
 
         async function refreshData() {
             await loadStats();

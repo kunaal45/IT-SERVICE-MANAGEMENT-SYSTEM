@@ -1,6 +1,7 @@
 com\itsm\itsmsystem\Controller\AuthController.class
 com\itsm\itsmsystem\exception\UnauthorizedException.class
 com\itsm\itsmsystem\dto\DashboardStatsDto.class
+com\itsm\itsmsystem\dto\CreateUserRequest.class
 com\itsm\itsmsystem\model\entity\Category.class
 com\itsm\itsmsystem\service\AuthService.class
 com\itsm\itsmsystem\repository\AuditLogRepository.class

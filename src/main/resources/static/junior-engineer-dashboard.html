@@ -4,12 +4,11 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Senior Engineer Dashboard - ITSM</title>
-    <meta name="description" content="ITSM Senior Engineer Dashboard – manage and resolve high-priority assigned support tickets." />
+    <title>Junior Engineer Dashboard - ITSM</title>
+    <meta name="description" content="ITSM Junior Engineer Dashboard – view and resolve your assigned low and medium priority support tickets." />
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%234a90d9'/%3E%3Ccircle cx='32' cy='26' r='16' fill='rgba(255,255,255,0.18)'/%3E%3Ccircle cx='32' cy='26' r='7' fill='rgba(255,255,255,0.28)'/%3E%3Ctext x='32' y='53' font-family='Arial,sans-serif' font-weight='900' font-size='13' fill='white' text-anchor='middle'%3EITSMS%3C/text%3E%3C/svg%3E">
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
-        rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
     <script>
         tailwind.config = {
@@ -29,6 +28,14 @@
     <link rel="stylesheet" href="css/theme.css">
     <style>
         body { font-family: Inter, sans-serif; }
+        .priority-low    { background:rgba(0,230,118,0.12)!important; color:#00e676!important; border:1px solid rgba(0,230,118,0.3)!important; }
+        .priority-medium { background:rgba(255,170,0,0.12)!important; color:#ffaa00!important; border:1px solid rgba(255,170,0,0.3)!important; }
+        .access-badge {
+            display:inline-flex; align-items:center; gap:6px;
+            background:rgba(255,170,0,0.1); border:1px solid rgba(255,170,0,0.3);
+            border-radius:6px; padding:4px 10px; font-size:11px;
+            color:#ffaa00; font-weight:600; letter-spacing:0.5px;
+        }
     </style>
 </head>
 
@@ -39,12 +46,17 @@
         <div class="max-w-7xl mx-auto px-8 py-4">
             <div class="flex items-center justify-between">
                 <div class="flex items-center gap-4">
-                    <div class="w-12 h-12 rounded-xl flex items-center justify-center" style="background:linear-gradient(135deg,#00d4ff,#0077aa);box-shadow:0 4px 16px rgba(0,212,255,0.3)">
-                        <span class="material-icons" style="color:#000d1a;font-size:22px">engineering</span>
+                    <div class="w-12 h-12 rounded-xl flex items-center justify-center" style="background:linear-gradient(135deg,#ffaa00,#cc8800);box-shadow:0 4px 16px rgba(255,170,0,0.3)">
+                        <span class="material-icons" style="color:#000d1a;font-size:22px">build</span>
                     </div>
                     <div>
-                        <h1 id="dashboardTitle" class="text-xl font-bold" style="color:#e2e8f0">Senior Engineer Dashboard</h1>
-                        <p id="dashboardSubRole" class="text-xs" style="color:#3d5166;letter-spacing:0.5px">SENIOR ENGINEER</p>
+                        <h1 class="text-xl font-bold" style="color:#e2e8f0">Junior Engineer Dashboard</h1>
+                        <div class="flex items-center gap-2 mt-0.5">
+                            <span class="access-badge">
+                                <span class="material-icons" style="font-size:12px">lock</span>
+                                LIMITED ACCESS — LOW &amp; MEDIUM PRIORITY
+                            </span>
+                        </div>
                     </div>
                 </div>
                 <div class="flex items-center gap-4">
@@ -58,16 +70,21 @@
                             class="flex items-center gap-3 pl-4 border-l border-slate-200 hover:bg-slate-50 p-2 rounded-lg transition-colors">
                             <div class="text-right">
                                 <div id="userName" class="text-sm font-medium text-slate-800">Engineer</div>
-                                <div id="userRoleLabel" class="text-xs text-slate-500">SENIOR ENGINEER</div>
+                                <div class="text-xs text-slate-500">JUNIOR ENGINEER</div>
                             </div>
-                            <div
-                                class="w-10 h-10 bg-gradient-to-br from-primary to-blue-600 rounded-full flex items-center justify-center text-white font-semibold user-avatar-initial">
-                                E</div>
+                            <div class="w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold user-avatar-initial"
+                                style="background:linear-gradient(135deg,#ffaa00,#cc8800);color:#000d1a">
+                                J</div>
                         </button>
 
                         <div id="profileMenu"
-                            class="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-slate-100 overflow-hidden hidden">
+                            class="absolute right-0 mt-2 w-52 bg-white rounded-xl shadow-lg border border-slate-100 overflow-hidden hidden">
                             <div class="p-2">
+                                <!-- Role info banner -->
+                                <div style="margin:4px 4px 8px;padding:8px 10px;background:rgba(255,170,0,0.1);border:1px solid rgba(255,170,0,0.25);border-radius:8px;">
+                                    <div style="font-size:10px;color:#ffaa00;font-weight:700;letter-spacing:1px">JUNIOR ENGINEER</div>
+                                    <div style="font-size:11px;color:#7a90a8;margin-top:2px">Low &amp; Medium priority tickets</div>
+                                </div>
                                 <button onclick="logout()"
                                     class="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg">
                                     <span class="material-icons text-lg">logout</span> Logout
@@ -89,28 +106,31 @@
                     <span class="material-icons text-slate-500">close</span>
                 </button>
             </div>
-
-            <p class="text-sm text-slate-600 mb-4">Please provide any final resolution notes for this ticket (optional).
-            </p>
-
+            <p class="text-sm text-slate-600 mb-4">Please provide final resolution notes for this ticket (optional).</p>
             <textarea id="resolutionNotesInput" rows="4"
                 class="w-full px-4 py-3 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary resize-none mb-6"
                 placeholder="Type resolution notes here..."></textarea>
-
             <input type="hidden" id="resolveTicketId" value="" />
-
             <div class="flex gap-3">
                 <button onclick="closeResolveModal()"
                     class="flex-1 px-4 py-2.5 border border-slate-200 rounded-lg text-sm font-medium hover:bg-slate-50">Cancel</button>
                 <button onclick="confirmResolve()"
-                    class="flex-1 px-4 py-2.5 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700">Confirm
-                    Resolve</button>
+                    class="flex-1 px-4 py-2.5 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700">Confirm Resolve</button>
             </div>
         </div>
     </div>
 
     <!-- Main Content -->
     <main class="max-w-7xl mx-auto px-8 py-8">
+
+        <!-- Info Banner -->
+        <div style="background:rgba(255,170,0,0.08);border:1px solid rgba(255,170,0,0.25);border-radius:12px;padding:12px 20px;margin-bottom:24px;display:flex;align-items:center;gap:12px;">
+            <span class="material-icons" style="color:#ffaa00;font-size:20px">info</span>
+            <div>
+                <span style="font-size:13px;font-weight:600;color:#ffaa00">Junior Engineer Access</span>
+                <span style="font-size:13px;color:#7a90a8;margin-left:8px">You can only view and work on <strong style="color:#ffaa00">Low</strong> and <strong style="color:#ffaa00">Medium</strong> priority tickets assigned to you.</span>
+            </div>
+        </div>
 
         <!-- Statistics Cards -->
         <div class="grid grid-cols-4 gap-6 mb-8">
@@ -122,7 +142,7 @@
                     </div>
                 </div>
                 <div id="assignedCount" class="text-3xl font-bold text-slate-900 mb-1">0</div>
-                <div class="text-xs text-slate-500">Total assigned tickets</div>
+                <div class="text-xs text-slate-500">Low &amp; Medium priority</div>
             </div>
 
             <div class="bg-white rounded-xl border border-slate-200 p-6">
@@ -144,7 +164,7 @@
                     </div>
                 </div>
                 <div id="resolvedTodayCount" class="text-3xl font-bold text-slate-900 mb-1">0</div>
-                <div class="text-xs text-slate-500">Resolved tickets</div>
+                <div class="text-xs text-slate-500">Tickets resolved</div>
             </div>
 
             <div class="bg-white rounded-xl border border-slate-200 p-6">
@@ -164,9 +184,9 @@
             <div class="p-6 border-b border-slate-200 flex items-center justify-between">
                 <div>
                     <h2 class="text-lg font-semibold text-slate-800">My Assigned Tickets</h2>
-                    <p id="ticketSubtitle" class="text-sm text-slate-500">Tickets currently assigned to you</p>
+                    <p id="ticketSubtitle" class="text-sm text-slate-500">Low &amp; Medium priority tickets assigned to you</p>
                 </div>
-                <button onclick="loadEngineerTickets()"
+                <button onclick="loadJuniorTickets()"
                     class="px-3 py-1.5 text-sm border border-slate-200 rounded-lg hover:bg-slate-50 flex items-center gap-1">
                     <span class="material-icons text-sm">refresh</span> Refresh
                 </button>
@@ -200,21 +220,15 @@
         document.addEventListener('DOMContentLoaded', function () {
             checkAuth();
             loadUserInfo();
-            // Dynamic title based on engineer level stored at login
+
+            // Verify this is a JUNIOR engineer, redirect if not
             const user = getCurrentUser();
             const level = (user && user.engineerLevel) || localStorage.getItem('itsm_engineer_level');
-            if (level === 'JUNIOR') {
-                // Redirect junior engineers to the correct dashboard
-                window.location.href = '/junior-engineer-dashboard.html';
+            if (level && level !== 'JUNIOR') {
+                window.location.href = '/engineer-dashboard.html';
                 return;
             }
-            const title = 'Senior Engineer Dashboard';
-            document.title = title + ' - ITSM';
-            const h = document.getElementById('dashboardTitle');
-            if (h) h.textContent = title;
-            const sr = document.getElementById('userRoleLabel');
-            if (sr) sr.textContent = 'SENIOR ENGINEER';
-            loadEngineerTickets();
+            loadJuniorTickets();
         });
 
         // Close profile menu on outside click
@@ -230,15 +244,19 @@
             document.getElementById('profileMenu').classList.toggle('hidden');
         }
 
-        async function loadEngineerTickets() {
-            const tickets = await loadTickets(); // returns tickets assigned to me
+        async function loadJuniorTickets() {
+            // Fetch all my assigned tickets then filter to only LOW/MEDIUM
+            const allTickets = await loadTickets();
+            const tickets = allTickets.filter(t =>
+                t.priority === 'LOW' || t.priority === 'MEDIUM'
+            );
+
             const ticketsList = document.getElementById('ticketsList');
 
             // Update metric cards
             const total = tickets.length;
             const inProg = tickets.filter(t => t.status === 'IN_PROGRESS').length;
             const resolved = tickets.filter(t => t.status === 'RESOLVED' || t.status === 'CLOSED').length;
-            const assigned = tickets.filter(t => t.status === 'ASSIGNED').length;
 
             setEl('assignedCount', total);
             setEl('inProgressCount', inProg);
@@ -247,9 +265,8 @@
             // Calculate average response time from resolved tickets
             const resolvedWithTimes = tickets.filter(t => t.status === 'RESOLVED' && t.createdAt && t.resolvedAt);
             if (resolvedWithTimes.length > 0) {
-                const avgMs = resolvedWithTimes.reduce((acc, t) => {
-                    return acc + (new Date(t.resolvedAt) - new Date(t.createdAt));
-                }, 0) / resolvedWithTimes.length;
+                const avgMs = resolvedWithTimes.reduce((acc, t) =>
+                    acc + (new Date(t.resolvedAt) - new Date(t.createdAt)), 0) / resolvedWithTimes.length;
                 const avgHours = Math.floor(avgMs / 3600000);
                 const avgMins = Math.floor((avgMs % 3600000) / 60000);
                 setEl('avgResponseTime', avgHours > 0 ? `${avgHours}h ${avgMins}m` : `${avgMins}m`);
@@ -258,24 +275,18 @@
             }
 
             const subtitle = document.getElementById('ticketSubtitle');
-            if (subtitle) subtitle.textContent = `Showing ${total} ticket${total !== 1 ? 's' : ''} assigned to you`;
+            if (subtitle) subtitle.textContent = 'Low & Medium priority tickets assigned to you';
 
             if (!tickets || tickets.length === 0) {
-                ticketsList.innerHTML = '<tr><td colspan="6" class="px-6 py-8 text-center text-slate-400">No tickets assigned yet</td></tr>';
+                ticketsList.innerHTML = '<tr><td colspan="6" class="px-6 py-8 text-center text-slate-400">No low/medium priority tickets assigned yet</td></tr>';
                 return;
             }
 
-            const priorityColors = {
-                'HIGH': 'bg-red-100 text-red-700',
-                'CRITICAL': 'bg-red-100 text-red-700',
-                'MEDIUM': 'bg-orange-100 text-orange-700',
-                'LOW': 'bg-green-100 text-green-700'
-            };
             const statusColors = {
-                'ASSIGNED': 'bg-blue-100 text-blue-700',
+                'ASSIGNED'   : 'bg-blue-100 text-blue-700',
                 'IN_PROGRESS': 'bg-purple-100 text-purple-700',
-                'RESOLVED': 'bg-green-100 text-green-700',
-                'CLOSED': 'bg-slate-100 text-slate-700'
+                'RESOLVED'   : 'bg-green-100 text-green-700',
+                'CLOSED'     : 'bg-slate-100 text-slate-700'
             };
 
             ticketsList.innerHTML = tickets.map(ticket => {
@@ -284,12 +295,15 @@
                     displayStatus = 'SLA_BREACHED';
                 }
                 const slaClass = ticket.slaBreached ? 'text-red-600 font-medium' : 'text-slate-500';
-                const slaText = ticket.slaBreached && ticket.status !== 'RESOLVED' && ticket.status !== 'CLOSED' ?
-                    'SLA Breached!' : (ticket.slaDeadline ? formatDate(ticket.slaDeadline) : 'No SLA');
+                const slaText = ticket.slaBreached && ticket.status !== 'RESOLVED' && ticket.status !== 'CLOSED'
+                    ? 'SLA Breached!' : (ticket.slaDeadline ? formatDate(ticket.slaDeadline) : 'No SLA');
                 const canStart = ticket.status === 'ASSIGNED';
                 const canResolve = ticket.status === 'IN_PROGRESS';
+                const statusColor = displayStatus === 'SLA_BREACHED'
+                    ? 'bg-red-100 text-red-700' : (statusColors[displayStatus] || 'bg-slate-100 text-slate-700');
 
-                const statusColor = displayStatus === 'SLA_BREACHED' ? 'bg-red-100 text-red-700' : (statusColors[displayStatus] || 'bg-slate-100 text-slate-700');
+                // Priority badge: Junior only sees LOW/MEDIUM
+                const priorityBadgeClass = ticket.priority === 'LOW' ? 'priority-low' : 'priority-medium';
 
                 return `
                 <tr class="hover:bg-slate-50 cursor-pointer" onclick="viewTicket(${ticket.id})">
@@ -301,7 +315,7 @@
                         <div class="text-sm text-slate-500">By ${ticket.createdBy ? escHtml(ticket.createdBy.name) : 'Unknown'}</div>
                     </td>
                     <td class="px-6 py-4">
-                        <span class="px-3 py-1 rounded-full text-xs font-medium uppercase ${priorityColors[ticket.priority] || 'bg-slate-100 text-slate-700'}">
+                        <span class="px-3 py-1 rounded-full text-xs font-semibold uppercase ${priorityBadgeClass}">
                             ${ticket.priority || 'N/A'}
                         </span>
                     </td>
@@ -326,13 +340,12 @@
 
         async function handleStartProgress(ticketId) {
             const result = await startProgress(ticketId);
-            if (result) loadEngineerTickets();
+            if (result) loadJuniorTickets();
         }
 
         async function handleResolve(ticketId) {
             document.getElementById('resolveTicketId').value = ticketId;
-            document.getElementById('resolutionNotesInput').value = ''; // clear prior
-
+            document.getElementById('resolutionNotesInput').value = '';
             document.getElementById('resolveModal').classList.remove('hidden');
             document.getElementById('resolveModal').classList.add('flex');
         }
@@ -346,10 +359,9 @@
         async function confirmResolve() {
             const ticketId = document.getElementById('resolveTicketId').value;
             const notes = document.getElementById('resolutionNotesInput').value;
-
             closeResolveModal();
             const result = await resolveTicket(ticketId, notes);
-            if (result) loadEngineerTickets();
+            if (result) loadJuniorTickets();
         }
 
         function setEl(id, val) {

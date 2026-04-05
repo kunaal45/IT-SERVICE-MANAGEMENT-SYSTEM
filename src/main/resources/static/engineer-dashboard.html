@@ -4,8 +4,9 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Engineer Dashboard - ITSM</title>
-    <meta name="description" content="ITSM Engineer Dashboard – view and manage your assigned support tickets." />
+    <title>Senior Engineer Dashboard - ITSM</title>
+    <meta name="description" content="ITSM Senior Engineer Dashboard – manage and resolve high-priority assigned support tickets." />
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%234a90d9'/%3E%3Ccircle cx='32' cy='26' r='16' fill='rgba(255,255,255,0.18)'/%3E%3Ccircle cx='32' cy='26' r='7' fill='rgba(255,255,255,0.28)'/%3E%3Ctext x='32' y='53' font-family='Arial,sans-serif' font-weight='900' font-size='13' fill='white' text-anchor='middle'%3EITSMS%3C/text%3E%3C/svg%3E">
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
         rel="stylesheet" />
@@ -16,18 +17,18 @@
             theme: {
                 extend: {
                     colors: {
-                        "primary": "#137fec",
-                        "background-light": "#f6f7f8",
+                        "primary": "#00d4ff",
+                        "background-light": "#0c1220",
                     },
                     fontFamily: { "display": ["Inter", "sans-serif"] },
                 },
             },
         }
     </script>
+    <link rel="stylesheet" href="css/custom.css">
+    <link rel="stylesheet" href="css/theme.css">
     <style>
-        body {
-            font-family: Inter, sans-serif;
-        }
+        body { font-family: Inter, sans-serif; }
     </style>
 </head>
 
@@ -38,12 +39,12 @@
         <div class="max-w-7xl mx-auto px-8 py-4">
             <div class="flex items-center justify-between">
                 <div class="flex items-center gap-4">
-                    <div class="w-12 h-12 bg-primary rounded-xl flex items-center justify-center">
-                        <span class="material-icons text-white text-2xl">engineering</span>
+                    <div class="w-12 h-12 rounded-xl flex items-center justify-center" style="background:linear-gradient(135deg,#00d4ff,#0077aa);box-shadow:0 4px 16px rgba(0,212,255,0.3)">
+                        <span class="material-icons" style="color:#000d1a;font-size:22px">engineering</span>
                     </div>
                     <div>
-                        <h1 class="text-xl font-bold text-slate-800">Engineer Dashboard</h1>
-                        <p class="text-xs text-slate-500">Support Engineer Portal</p>
+                        <h1 id="dashboardTitle" class="text-xl font-bold" style="color:#e2e8f0">Senior Engineer Dashboard</h1>
+                        <p id="dashboardSubRole" class="text-xs" style="color:#3d5166;letter-spacing:0.5px">SENIOR ENGINEER</p>
                     </div>
                 </div>
                 <div class="flex items-center gap-4">
@@ -57,7 +58,7 @@
                             class="flex items-center gap-3 pl-4 border-l border-slate-200 hover:bg-slate-50 p-2 rounded-lg transition-colors">
                             <div class="text-right">
                                 <div id="userName" class="text-sm font-medium text-slate-800">Engineer</div>
-                                <div class="text-xs text-slate-500">ENGINEERING TEAM</div>
+                                <div id="userRoleLabel" class="text-xs text-slate-500">SENIOR ENGINEER</div>
                             </div>
                             <div
                                 class="w-10 h-10 bg-gradient-to-br from-primary to-blue-600 rounded-full flex items-center justify-center text-white font-semibold user-avatar-initial">
@@ -67,11 +68,6 @@
                         <div id="profileMenu"
                             class="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-slate-100 overflow-hidden hidden">
                             <div class="p-2">
-                                <a href="#"
-                                    class="flex items-center gap-2 px-3 py-2 text-sm text-slate-600 hover:bg-slate-50 rounded-lg">
-                                    <span class="material-icons text-lg">person</span> Profile
-                                </a>
-                                <div class="h-px bg-slate-100 my-1"></div>
                                 <button onclick="logout()"
                                     class="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg">
                                     <span class="material-icons text-lg">logout</span> Logout
@@ -204,6 +200,20 @@
         document.addEventListener('DOMContentLoaded', function () {
             checkAuth();
             loadUserInfo();
+            // Dynamic title based on engineer level stored at login
+            const user = getCurrentUser();
+            const level = (user && user.engineerLevel) || localStorage.getItem('itsm_engineer_level');
+            if (level === 'JUNIOR') {
+                // Redirect junior engineers to the correct dashboard
+                window.location.href = '/junior-engineer-dashboard.html';
+                return;
+            }
+            const title = 'Senior Engineer Dashboard';
+            document.title = title + ' - ITSM';
+            const h = document.getElementById('dashboardTitle');
+            if (h) h.textContent = title;
+            const sr = document.getElementById('userRoleLabel');
+            if (sr) sr.textContent = 'SENIOR ENGINEER';
             loadEngineerTickets();
         });
 

@@ -6,6 +6,7 @@
 const API_URL = '/api';
 const TOKEN_KEY = 'itsm_token';
 const USER_KEY = 'itsm_user';
+const ENGINEER_LEVEL_KEY = 'itsm_engineer_level';
 
 // ========================================
 // AUTH UTILITIES
@@ -78,26 +79,87 @@ function checkAuth() {
     return true;
 }
 
-function redirectToDashboard(role) {
+function redirectToDashboard(role, engineerLevel) {
     if (role === 'ADMIN') {
         window.location.href = '/admin-dashboard.html';
     } else if (role === 'SERVICE_DESK') {
         window.location.href = '/service-desk-dashboard.html';
     } else if (role === 'ENGINEER' || role === 'SUPPORT_ENGINEER') {
-        window.location.href = '/engineer-dashboard.html';
+        const level = engineerLevel || localStorage.getItem(ENGINEER_LEVEL_KEY);
+        if (level === 'JUNIOR') {
+            window.location.href = '/junior-engineer-dashboard.html';
+        } else {
+            window.location.href = '/engineer-dashboard.html';
+        }
     } else {
         window.location.href = '/faculty-dashboard.html';
     }
 }
 
 /**
- * Consistent logout across all portals.
- * Clears all stored auth data and redirects to login.
+ * Show a styled logout confirmation modal.
+ * The actual logout only happens when the user confirms.
  */
 function logout() {
-    localStorage.removeItem(TOKEN_KEY);
-    localStorage.removeItem(USER_KEY);
-    window.location.href = '/index.html';
+    // If a confirmation modal is already showing, don't create another one
+    if (document.getElementById('logoutConfirmModal')) return;
+
+    const overlay = document.createElement('div');
+    overlay.id = 'logoutConfirmModal';
+    overlay.style.cssText = `
+        position:fixed;inset:0;z-index:99999;
+        background:rgba(0,0,0,0.6);
+        display:flex;align-items:center;justify-content:center;
+        animation:fadeIn 0.2s ease;
+    `;
+    overlay.innerHTML = `
+        <div style="
+            background:#161c26;border:1px solid #253348;
+            border-radius:16px;padding:32px;max-width:380px;width:90%;
+            box-shadow:0 30px 60px rgba(0,0,0,0.5);
+            animation:slideUp 0.25s ease;
+            text-align:center;
+        ">
+            <div style="width:56px;height:56px;background:rgba(255,77,106,0.15);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
+                <span class='material-icons' style='color:#ff4d6a;font-size:28px;'>logout</span>
+            </div>
+            <h3 style="color:#e2e8f0;font-size:18px;font-weight:700;margin:0 0 8px;">Confirm Logout</h3>
+            <p style="color:#7a90a8;font-size:14px;margin:0 0 24px;">Are you sure you want to sign out of the ITSM portal?</p>
+            <div style="display:flex;gap:12px;">
+                <button id='logoutCancelBtn' style="
+                    flex:1;padding:10px 16px;border-radius:8px;
+                    background:#1c2535;border:1px solid #253348;
+                    color:#7a90a8;font-size:14px;font-weight:600;cursor:pointer;
+                    font-family:Inter,sans-serif;
+                " onmouseover="this.style.background='#212d40'" onmouseout="this.style.background='#1c2535'">
+                    Cancel
+                </button>
+                <button id='logoutConfirmBtn' style="
+                    flex:1;padding:10px 16px;border-radius:8px;
+                    background:#ff4d6a;border:none;
+                    color:#fff;font-size:14px;font-weight:700;cursor:pointer;
+                    font-family:Inter,sans-serif;
+                " onmouseover="this.style.background='#e0314a'" onmouseout="this.style.background='#ff4d6a'">
+                    Sign Out
+                </button>
+            </div>
+        </div>
+        <style>
+            @keyframes fadeIn { from{opacity:0} to{opacity:1} }
+            @keyframes slideUp { from{transform:translateY(20px);opacity:0} to{transform:translateY(0);opacity:1} }
+        </style>
+    `;
+
+    document.body.appendChild(overlay);
+
+    document.getElementById('logoutCancelBtn').addEventListener('click', () => overlay.remove());
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.remove(); });
+    document.getElementById('logoutConfirmBtn').addEventListener('click', () => {
+        localStorage.removeItem(TOKEN_KEY);
+        localStorage.removeItem(USER_KEY);
+        localStorage.removeItem(ENGINEER_LEVEL_KEY);
+        window.location.href = '/index.html';
+    });
 }
 
 function goToDashboard() {
@@ -133,9 +195,13 @@ async function handleLogin(email, password) {
                 id: data.userId,
                 email: data.email,
                 name: data.name,
-                role: data.role
+                role: data.role,
+                engineerLevel: data.engineerLevel || null
             }));
-            redirectToDashboard(data.role);
+            if (data.engineerLevel) {
+                localStorage.setItem(ENGINEER_LEVEL_KEY, data.engineerLevel);
+            }
+            redirectToDashboard(data.role, data.engineerLevel);
             return true;
         } else {
             showError('Invalid email or password');

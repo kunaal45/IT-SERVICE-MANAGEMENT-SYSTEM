@@ -50,6 +50,7 @@ public class AuthService {
                 .email(user.getEmail())
                 .name(user.getName())
                 .role(user.getRole().toString())
+                .engineerLevel(user.getEngineerLevel() != null ? user.getEngineerLevel().toString() : null)
                 .userId(user.getId())
                 .message("Login successful")
                 .build();
