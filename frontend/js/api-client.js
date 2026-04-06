@@ -11,7 +11,7 @@ class ITSMClient {
         const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
         
         // IMPORTANT: Replace 'YOUR-KOYEB-URL' below with the actual URL Koyeb gives you!
-        this.baseURL = isLocal ? 'http://localhost:8080/api' : 'https://it-service-management-system-vndi.onrender.com/api';
+        this.baseURL = isLocal ? 'http://localhost:8080/api' : 'https://it-service-management-system-3.onrender.com/api';
         
         this.token = localStorage.getItem('jwt_token');
     }

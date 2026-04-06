@@ -1,6 +1,6 @@
 {
   "rewrites": [
-    { "source": "/api/(.*)", "destination": "https://itsm-backend.onrender.com/api/$1" },
+    { "source": "/api/(.*)", "destination": "https://it-service-management-system-3.onrender.com/api/$1" },
     { "source": "/(.*)", "destination": "/$1.html" }
   ]
 }
