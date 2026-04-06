@@ -62,11 +62,12 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList(
+        // Using setAllowedOriginPatterns to allow all Vercel subdomains
+        configuration.setAllowedOriginPatterns(Arrays.asList(
             "http://localhost:8080", 
             "http://localhost:3000",
-            "https://it-service-management-system.vercel.app", 
-            "https://it-service-management-system-vndi.vercel.app"
+            "https://it-service-management-system*.vercel.app",
+            "https://it-service-management-system-83gn.vercel.app"
         ));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
